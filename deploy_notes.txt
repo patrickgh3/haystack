@@ -1,0 +1,17 @@
+Followed this guide:
+https://elithrar.github.io/article/running-go-applications-in-the-background/
+Installed supervisor, configured a little bit
+Copied app config file, # to ; and remove directory, environment
+Created user "deploy"
+Put binary in /home/deploy/bin/
+Set directory permissions for output HTML
+
+
+
+supervisorctl cheat sheet
+
+supervisorctl reload
+supervisorctl status yourapp
+supervisorctl stop yourapp
+supervisorctl help
+
