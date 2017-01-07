@@ -8,7 +8,8 @@ Set directory permissions for output HTML
 
 
 
-supervisorctl cheat sheet
+https://elithrar.github.io/article/running-go-applications-in-the-background/
+supervisor cheat sheet
 
 supervisorctl reload
 supervisorctl status yourapp

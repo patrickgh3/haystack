@@ -1,22 +1,28 @@
 package main
 
 import (
-    "time"
     "fmt"
-    "html/template"
     "os"
     "bufio"
+    "html/template"
+    "time"
+    "github.com/spf13/viper"
+    "github.com/kardianos/osext"
+    "path"
 )
 
 var templ = template.Must(template.New("following").Parse(templateStr))
 
 // RebuildPage generates a new HTML page with Twitch following data
 // and writes it to file.
-func RebuildPage() {
-    fmt.Println("Rebuilding")
+func RebuildPage(outPath string) {
+    fmt.Print("Rebuilding...")
+
+    // Compute contents
     timeStr := time.Now().Format(time.RFC850)
 
-    f, err := os.Create(outFilename)
+    // Open html file, write contents, close it
+    f, err := os.Create(outPath + "/index.html")
     if err != nil {
         panic(err)
     }
@@ -25,20 +31,39 @@ func RebuildPage() {
     w := bufio.NewWriter(f)
     templ.Execute(w, timeStr)
     w.Flush()
+
+    fmt.Println("done")
 }
 
 func main() {
-    RebuildPage()
-    ticker := time.NewTicker(5 * time.Second)
+    // Set config file location to current directory
+    viper.SetConfigName("config")
+    ef, err := osext.ExecutableFolder()
+    if err != nil {
+        panic(err)
+    }
+    viper.AddConfigPath(ef)
+
+    // Read config values
+    viper.ReadInConfig()
+    outPath := viper.GetString("out_path")
+    outPath = path.Clean(outPath)
+    seconds := viper.GetInt("interval_seconds")
+    refreshDuration := time.Duration(seconds) * time.Second
+
+    // Do an initial refresh
+    // (useful to quickly verify it's working)
+    RebuildPage(outPath)
+
+    // Start periodic refreshes
+    ticker := time.NewTicker(refreshDuration)
     for {
         select {
         case <- ticker.C:
-            RebuildPage()
+            RebuildPage(outPath)
         }
     }
 }
-
-const outFilename = "/var/html/cwpat.me/following/out.html"
 
 const templateStr = `
 <html>
@@ -50,3 +75,4 @@ const templateStr = `
 </body>
 </html>
 `
+
