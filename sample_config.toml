@@ -1,3 +1,4 @@
 out_path = "/var/html/cwpat.me/asdfasdf/"
 interval_seconds = 30
+client_id = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 

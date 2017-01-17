@@ -13,20 +13,25 @@ import (
 
 var templ = template.Must(template.New("following").Parse(templateStr))
 
+var apiClientId string;
+
 // RebuildPage generates a new HTML page with Twitch following data
 // and writes it to file.
-func RebuildPage(outPath string) {
+func RebuildPage (outPath string) {
     fmt.Print("Rebuilding...")
+
+    SaveStreamThumbnail(12963337) // TJ
+    //SaveStreamThumbnail(27787567) // iateyourpie
 
     // Compute contents
     timeStr := time.Now().Format(time.RFC850)
 
     // Open html file, write contents, close it
     f, err := os.Create(outPath + "/index.html")
+    defer f.Close()
     if err != nil {
         panic(err)
     }
-    defer f.Close()
 
     w := bufio.NewWriter(f)
     templ.Execute(w, timeStr)
@@ -35,7 +40,7 @@ func RebuildPage(outPath string) {
     fmt.Println("done")
 }
 
-func main() {
+func main () {
     // Set config file location to current directory
     viper.SetConfigName("config")
     ef, err := osext.ExecutableFolder()
@@ -50,6 +55,7 @@ func main() {
     outPath = path.Clean(outPath)
     seconds := viper.GetInt("interval_seconds")
     refreshDuration := time.Duration(seconds) * time.Second
+    apiClientId = viper.GetString("client_id")
 
     // Do an initial refresh
     // (useful to quickly verify it's working)
@@ -68,7 +74,7 @@ func main() {
 const templateStr = `
 <html>
 <head>
-<title>Following</title>
+<title>Pitchfork</title>
 </head>
 <body>
 {{.}}
