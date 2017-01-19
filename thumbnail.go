@@ -66,7 +66,7 @@ func SaveStreamThumbnail (channelId int) {
         panic(err)
     }
 
-    fmt.Printf("Source: %v\nDest: %v\n", imageUrl, filename)
+    //fmt.Printf("Source: %v\nDest: %v\n", imageUrl, filename)
 }
 
 type StreamResponse struct {
@@ -75,6 +75,7 @@ type StreamResponse struct {
 type Stream struct {
     Preview *Preview
     Channel *Channel
+    _Id string
 }
 type Preview struct {
     Medium string
@@ -82,5 +83,4 @@ type Preview struct {
 type Channel struct {
     Display_name string
 }
-
 

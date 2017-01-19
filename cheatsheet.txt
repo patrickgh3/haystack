@@ -1,4 +1,4 @@
-Followed this guide:
+For deploying, followed this guide:
 https://elithrar.github.io/article/running-go-applications-in-the-background/
 Installed supervisor, configured a little bit
 Copied app config file, # to ; and remove directory, environment
@@ -8,11 +8,29 @@ Set directory permissions for output HTML
 
 
 
-https://elithrar.github.io/article/running-go-applications-in-the-background/
 supervisor cheat sheet
 
 supervisorctl reload
 supervisorctl status yourapp
 supervisorctl stop yourapp
 supervisorctl help
+
+
+
+Twitch API cheat sheet
+
+curl -H 'Accept: application/vnd.twitchtv.v5+json' -H 'CLIENT-ID: ' -X GET 'https://api.twitch.tv/kraken/'
+/streams/<channel ID>
+/channels/<channel ID>
+/search/channels?query=<query>
+
+python -m json.tool
+
+
+
+
+Channel IDs
+12963337    TJ
+27787567    Pie
+10915868    Stonk
 

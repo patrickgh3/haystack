@@ -1,4 +1,7 @@
-out_path = "/var/html/cwpat.me/asdfasdf/"
+out_path = "/var/html/a/b/c/"
 interval_seconds = 30
-client_id = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+client_id = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+db_user = "XXXXX"
+db_pass = "XXXXX"
+db_database = "XXXXX"
 
