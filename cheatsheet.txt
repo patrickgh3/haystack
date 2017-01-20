@@ -19,12 +19,11 @@ supervisorctl help
 
 Twitch API cheat sheet
 
-curl -H 'Accept: application/vnd.twitchtv.v5+json' -H 'CLIENT-ID: ' -X GET 'https://api.twitch.tv/kraken/'
+curl -H 'Accept: application/vnd.twitchtv.v5+json' -H 'Client-ID: ' -X GET 'https://api.twitch.tv/kraken/' | python -m json.tool
 /streams/<channel ID>
 /channels/<channel ID>
 /search/channels?query=<query>
 
-python -m json.tool
 
 
 
@@ -33,4 +32,5 @@ Channel IDs
 12963337    TJ
 27787567    Pie
 10915868    Stonk
+43248215    Maxinator
 
