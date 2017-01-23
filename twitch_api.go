@@ -6,9 +6,6 @@ import (
     "encoding/json"
 )
 
-// Twitch Developer Docs
-// https://dev.twitch.tv/docs
-
 type StreamsResponse struct {
     Total int `json:"_total"`
     Streams []*Stream

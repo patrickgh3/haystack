@@ -1,18 +1,22 @@
 package main
 
 import (
-    "time"
     "github.com/spf13/viper"
     "github.com/kardianos/osext"
     "path"
+    "time"
 )
 
 var outPath string
+var thumbsPath string
 var refreshDuration time.Duration
 var apiClientId string
 var dbUser string
 var dbPass string
 var dbDatabase string
+
+const ThumbDeleteDuration = time.Duration(30) * time.Second * -1
+const imagesSubdir = "/images/t"
 
 // ReadConfig sets various variables from the config file.
 func ReadConfig() {
@@ -29,8 +33,10 @@ func ReadConfig() {
     if err != nil {
         panic(err)
     }
+
     outPath = viper.GetString("out_path")
     outPath = path.Clean(outPath)
+    thumbsPath = outPath + imagesSubdir
     seconds := viper.GetInt("interval_seconds")
     refreshDuration = time.Duration(seconds) * time.Second
     apiClientId = viper.GetString("client_id")

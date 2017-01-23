@@ -32,26 +32,34 @@ func main () {
 // builds a new webpage.
 func Update () {
     sr := TwitchAPIAllStreams("?game=I%20Wanna%20Be%20The%20Guy")
-    for _, s := range sr.Streams[:] {
-        fmt.Printf("%v...", s.Channel.Display_name)
+    for _, s := range sr.Streams {
+        fmt.Printf("%v...\n", s.Channel.Display_name)
 
         channelName := strings.ToLower(s.Channel.Display_name)
         vodID := strconv.Itoa(s.Id)
         imageUrl := s.Preview.Medium
 
-        filepath := fmt.Sprintf("%v/images/%v_thumb.jpg",
-                outPath,
+        curTime := time.Now()
+        timeString := strconv.FormatInt(curTime.Unix(), 10);
+
+        filepath := fmt.Sprintf("%v/%v_%v.jpg",
+                thumbsPath,
                 channelName,
+                timeString,
         )
+
         DownloadImage(imageUrl, filepath)
 
-        InsertThumb(channelName, vodID, filepath)
-
-        fmt.Println("done")
+        InsertThumb(channelName, curTime, vodID, filepath)
     }
 
-    DeleteOldThumbs()
+    numDeleted := DeleteOldThumbs()
 
     BuildPage()
+
+    fmt.Printf("%v deleted\n", numDeleted)
+    fmt.Printf("%v thumbs \n", NumThumbs())
+    fmt.Printf("%v jpg files\n", NumFilesInDir(thumbsPath))
+    fmt.Printf("%v unique channels\n", NumUniqueChannels())
 }
 
