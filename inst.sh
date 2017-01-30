@@ -7,5 +7,5 @@ if [ $? != 0 ]; then
     exit 1
 fi
 mkdir -p test
-cp $GOPATH/bin/pitchfork test/
+cp $GOPATH/bin/haystack test/
 
