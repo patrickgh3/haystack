@@ -1,11 +1,11 @@
 package main
 
 import (
-    "fmt"
     "database/sql"
     _ "github.com/go-sql-driver/mysql"
     "time"
     "os"
+    "fmt"
 )
 
 var db *sql.DB
@@ -13,13 +13,12 @@ var db *sql.DB
 const mysqlTimeFormat = "2006-01-02 15:04:05"
 
 // InitDB creates the Database object in the package db variable.
-func InitDB () error {
+func InitDB () {
     // Don't open new database if db is already set
     if db != nil {
-        return nil
+        return
     }
 
-    // Open database
     dataSourceName := fmt.Sprintf("%v:%v@/%v", dbUser, dbPass, dbDatabase)
     var err error
     db, err = sql.Open("mysql", dataSourceName)
@@ -31,8 +30,6 @@ func InitDB () error {
     if err := db.Ping(); err != nil {
         panic(err)
     }
-
-    return nil
 }
 
 // InsertThumb adds a specified entry to the thumbs table.
@@ -40,10 +37,16 @@ func InsertThumb (channelName string, created time.Time,
         vodID string, imageUrl string) {
 
     timeString := created.Format(mysqlTimeFormat)
-    _, err := db.Exec(
+    fmt.Printf("%v, %v, %v, %v", channelName, timeString, vodID, imageUrl)
+/*    _, err := db.Exec(
             "INSERT INTO thumbs (created, channel, VOD, imageUrl)"+
             "VALUES (?, ?, ?, ?)",
             timeString, channelName, vodID, imageUrl,
+    )*/
+    _, err := db.Exec(
+            "INSERT INTO thumbs (channel, VOD, imageUrl)"+
+            "VALUES (?, ?, ?)",
+            channelName, vodID, imageUrl,
     )
     if err != nil {
         panic(err)
@@ -100,7 +103,7 @@ func DeleteOldThumbs() int {
         r := CurrRowStruct(rows)
         err = os.Remove(r.image)
         if err != nil {
-            fmt.Println("Error removing old image file")
+            fmt.Println("Error removing old thumb image file")
             fmt.Println(err)
         }
     }

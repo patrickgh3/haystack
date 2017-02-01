@@ -1,9 +1,9 @@
 package main
 
 import (
-    "fmt"
     "net/http"
     "encoding/json"
+    "fmt"
 )
 
 type StreamsResponse struct {
@@ -30,38 +30,35 @@ type Preview struct {
 }
 
 // TwitchAPIAllStreams returns all streams which match a given query.
-// https://dev.twitch.tv/docs/v5/reference/streams/#get-all-streams
+// See https://dev.twitch.tv/docs/v5/reference/streams/#get-all-streams
 func TwitchAPIAllStreams (queryString string) *StreamsResponse {
-    url := fmt.Sprintf(
-            "https://api.twitch.tv/kraken/streams/%v",
-            queryString,
-    )
-    sr := new(StreamsResponse)
-    TwitchAPIGeneralQuery(url, &sr)
-    return sr
+    urlTail := fmt.Sprintf("/streams/%v", queryString)
+    r := new(StreamsResponse)
+    TwitchAPIGeneralQuery(urlTail, &r)
+    return r
 }
 
 // TwitchAPIStreamByChannel returns a stream corresponding to a channel ID.
-// https://dev.twitch.tv/docs/v5/reference/streams/#get-stream-by-channel
+// See https://dev.twitch.tv/docs/v5/reference/streams/#get-stream-by-channel
 func TwitchAPIStreamByChannel (channelID int) *StreamResponse {
-    url := fmt.Sprintf(
-            "https://api.twitch.tv/kraken/streams/%v",
-            channelID,
-    )
-    sr := new(StreamResponse)
-    TwitchAPIGeneralQuery(url, &sr)
-    return sr
+    urlTail := fmt.Sprintf("/streams/%v", channelID)
+    r := new(StreamResponse)
+    TwitchAPIGeneralQuery(urlTail, &r)
+    return r
 }
 
 // TwitchAPIGeneralQuery performs an API query and parses the JSON response.
-func TwitchAPIGeneralQuery (url string, v interface{}) {
-    // Create client and request
+func TwitchAPIGeneralQuery (urlTail string, v interface{}) {
+    url := fmt.Sprintf(
+            "https://api.twitch.tv/kraken%v",
+            urlTail,
+    )
+
     client := &http.Client{}
     req, err := http.NewRequest("GET", url, nil)
     if err != nil {
         panic(err)
     }
-    // Set request headers
     req.Header.Add("Accept", "application/vnd.twitchtv.v5+json")
     req.Header.Add("Client-ID", apiClientId)
 

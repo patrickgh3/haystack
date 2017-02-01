@@ -18,12 +18,13 @@ const templateStr = `
 </html>
 `
 
-var templ = template.Must(template.New("following").Parse(templateStr))
-
-// RebuildPage generates an HTML page with up-to-date thumbnail content.
-func BuildPage () {
+// RebuildWebpage generates an HTML page with up-to-date thumbnail content.
+func BuildWebpage () {
     // Compute contents
     timeStr := time.Now().Format(time.RFC850)
+
+    //content, err := ioutil.ReadFile(
+    var templ = template.Must(template.New("following").Parse(templateStr))
 
     // Open html file, write contents, close it
     f, err := os.Create(outPath + "/index.html")
