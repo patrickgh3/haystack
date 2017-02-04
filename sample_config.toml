@@ -1,4 +1,5 @@
 out_path = "/var/html/a/b/c/"
+site_url = "https://haystack.google.com"
 interval_seconds = 30
 client_id = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 db_user = "XXXXX"

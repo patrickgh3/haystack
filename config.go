@@ -8,6 +8,7 @@ import (
 )
 
 var outPath string
+var siteBaseUrl string
 var thumbsPath string
 var refreshDuration time.Duration
 var apiClientId string
@@ -18,6 +19,7 @@ var dbDatabase string
 const ThumbDeleteDuration = time.Duration(30) * time.Second * -1
 const imagesSubdir = "/images/t"
 const configFilename = "config"
+const vodBaseUrl = "https://www.twitch.tv/videos/"
 
 // ReadConfig sets various variables from the config file.
 func ReadConfig() {
@@ -37,6 +39,7 @@ func ReadConfig() {
     dbUser = viper.GetString("db_user")
     dbPass = viper.GetString("db_pass")
     dbDatabase = viper.GetString("db_database")
+    siteBaseUrl = viper.GetString("base_url")
     outPath = viper.GetString("out_path")
     outPath = path.Clean(outPath)
     thumbsPath = outPath + imagesSubdir

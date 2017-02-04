@@ -2,9 +2,53 @@
 <html>
   <head>
     <title>Haystack</title>
+    <style>
+* { margin: 0; padding: 0; }
+body {
+    color: #212121;
+    font-family: "Helvetica Neue", "Calibri Light", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: 0.02em;
+}
+#main-table { border-collapse: separate; border-spacing: 0 2em; }
+  #main-table td { width: 6em; height: 4em; }
+    #main-table h2 { text-align: center; margin: 0 1em; }
+    #main-table .hov {  background-color: white; display: inline-block; }
+      #main-table .hov:hover { opacity: .7 }
+      #main-table a { width: 100%; height: 100%; }
+        #main-table a img { width: 100%; height: 100%; display: block; }
+    </style>
   </head>
   <body>
-    {{.}}
+
+    <p>Build time: {{.BuildTimeStr}}</p>
+    <p>{{.NumChannels}} channels</p>
+
+    <table id="main-table">
+
+      {{range $c := $.Channels}}
+      <tr>
+
+        <td><h2>{{$c.Name}}</h2></td>
+        {{range $t := $c.Thumbs}}
+        <td>
+          {{if $t.Filled}}
+          <div class="hov">
+            <a href="{{$t.VodUrl}}">
+              <img src="{{$t.ImageUrl}}" target="_blank">
+            </a>
+          </div>
+          {{else}}
+          {{end}}
+        </td>
+        {{end}}
+
+      </tr>
+      {{end}}
+
+    </table>
+
   </body>
 </html>
 
