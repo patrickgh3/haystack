@@ -8,8 +8,8 @@ import (
 )
 
 var outPath string
-var siteBaseUrl string
 var thumbsPath string
+var siteBaseUrl string
 var refreshDuration time.Duration
 var apiClientId string
 var dbUser string
@@ -19,7 +19,7 @@ var dbDatabase string
 const ThumbDeleteDuration = time.Duration(30) * time.Second * -1
 const imagesSubdir = "/images/t"
 const configFilename = "config"
-const vodBaseUrl = "https://www.twitch.tv/videos/"
+const vodBaseUrl = "https://www.twitch.tv/videos"
 
 // ReadConfig sets various variables from the config file.
 func ReadConfig() {

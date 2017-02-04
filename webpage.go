@@ -39,8 +39,8 @@ func BuildWebpage () {
             t := WThumb{}
             t.Filled = false
             if (i != 3 && i != 5) {
-                t.ImageUrl = "http://placehold.it/100x80"
-                t.VodUrl = vodBaseUrl + "12341234"
+                t.ImageUrl = siteBaseUrl + "/images/100x80"
+                t.VodUrl = vodBaseUrl + "/" + "12341234"
                 t.Filled = true
             }
             c.Thumbs = append(c.Thumbs, t)

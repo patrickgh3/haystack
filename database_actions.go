@@ -8,13 +8,13 @@ import (
 
 // InsertThumb adds a specified entry to the thumbs table.
 func InsertThumb (channelName string, created time.Time,
-        vodID string, imageUrl string) {
+        vodID string, imagePath string) {
 
     timeString := created.Format(mysqlTimeFormat)
     _, err := db.Exec(
-            "INSERT INTO thumbs (created, channel, VOD, imageUrl)"+
+            "INSERT INTO thumbs (created, channel, VOD, imagePath)"+
             "VALUES (?, ?, ?, ?)",
-            timeString, channelName, vodID, imageUrl,
+            timeString, channelName, vodID, imagePath,
     )
     if err != nil {
         panic(err)
@@ -68,14 +68,16 @@ func DeleteOldThumbs() int {
     timeString := cutoffTime.Format(mysqlTimeFormat)
 
     // Delete image files of matching thumbs
-    rows, err := db.Query("SELECT * FROM thumbs WHERE created < (?)", timeString)
+    rows, err := db.Query("SELECT * FROM thumbs WHERE created < (?)",
+            timeString)
     if err != nil {
         panic(err)
     }
     defer rows.Close()
     for rows.Next() {
         r := CurrRowStruct(rows)
-        err = os.Remove(r.image)
+        filepath := outPath + "/" + r.image
+        err = os.Remove(filepath)
         if err != nil {
             fmt.Println("Error removing old thumb image file")
             fmt.Println(err)

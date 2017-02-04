@@ -39,12 +39,12 @@ func Update () {
         vodID := strconv.Itoa(s.Id)
         imageUrl := s.Preview.Medium
 
-        filepath := fmt.Sprintf("%v/%v_%v.jpg",
-                thumbsPath, channelName, timeString)
+        subpath := imagesSubdir + "/" + channelName + "_" + timeString + ".jpg"
+        path := outPath + "/" + subpath
 
-        DownloadImage(imageUrl, filepath)
+        DownloadImage(imageUrl, path)
 
-        InsertThumb(channelName, curTime, vodID, filepath)
+        InsertThumb(channelName, curTime, vodID, subpath)
     }
 
     BuildWebpage()
