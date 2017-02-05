@@ -35,3 +35,7 @@ Channel IDs
 10915868    Stonk
 43248215    Maxinator
 
+
+LOC in project
+find . -name '*.go' | xargs wc -l
+

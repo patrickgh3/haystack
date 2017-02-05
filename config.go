@@ -10,13 +10,13 @@ import (
 var outPath string
 var thumbsPath string
 var siteBaseUrl string
-var refreshDuration time.Duration
 var apiClientId string
 var dbUser string
 var dbPass string
 var dbDatabase string
+var refreshDuration time.Duration
+var numRefreshPeriods int
 
-const thumbDeleteDuration = time.Duration(30) * time.Second * -1
 const imagesSubdir = "/images/t"
 const configFilename = "config"
 const vodBaseUrl = "https://www.twitch.tv/videos"
@@ -43,7 +43,9 @@ func ReadConfig() {
     outPath = viper.GetString("out_path")
     outPath = path.Clean(outPath)
     thumbsPath = outPath + imagesSubdir
-    seconds := viper.GetInt("interval_seconds")
+
+    seconds := viper.GetInt("period_seconds")
     refreshDuration = time.Duration(seconds) * time.Second
+    numRefreshPeriods = viper.GetInt("num_periods")
 }
 

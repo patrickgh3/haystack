@@ -73,7 +73,8 @@ func ChannelThumbs (channel string) []ThumbRow {
 
 // DeleteOldThumbs deletes thumbs entries older than a certain time.
 func DeleteOldThumbs(roundTime time.Time) int {
-    cutoffTime := roundTime.Add(thumbDeleteDuration)
+    cutoffTime := roundTime.Add(
+            -refreshDuration * time.Duration(numRefreshPeriods))
     timeString := cutoffTime.Format(mysqlTimestampFormat)
 
     // Delete image files of matching thumbs
