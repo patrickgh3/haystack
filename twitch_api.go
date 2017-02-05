@@ -15,18 +15,27 @@ type StreamResponse struct {
     Stream *Stream
 }
 
+type VideosResponse struct {
+    Total int `json:"_total"`
+    Videos []*Video
+}
+
 type Stream struct {
-    Id int `json:"_id"`
     Channel *Channel
     Preview *Preview
 }
 
 type Channel struct {
+    Id int `json:"_id"`
     Display_name string
 }
 
 type Preview struct {
     Medium string
+}
+
+type Video struct {
+    Id string `json:"_id"`
 }
 
 // TwitchAPIAllStreams returns all streams which match a given query.
@@ -45,6 +54,25 @@ func TwitchAPIStreamByChannel (channelID int) *StreamResponse {
     r := new(StreamResponse)
     TwitchAPIGeneralQuery(urlTail, &r)
     return r
+}
+
+// TwitchAPIChannelVideos returns the videos from a channel.
+// See https://dev.twitch.tv/docs/v5/reference/channels/#get-channel-videos
+func TwitchAPIChannelVideos (channelID int, queryString string) *VideosResponse {
+    urlTail := fmt.Sprintf("/channels/%v/videos%v", channelID, queryString)
+    r := new(VideosResponse)
+    TwitchAPIGeneralQuery(urlTail, &r)
+    return r
+}
+
+// TwitchAPIChannelRecentArchive returns the most recent archive video.
+func TwitchAPIChannelRecentArchive (channelID int) *Video {
+    vr := TwitchAPIChannelVideos (channelID,
+            "?broadcast_type=archive&sort=time&limit=1")
+    if vr.Total == 0 {
+        return nil
+    }
+    return vr.Videos[0]
 }
 
 // TwitchAPIGeneralQuery performs an API query and parses the JSON response.

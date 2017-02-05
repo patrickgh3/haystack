@@ -43,7 +43,6 @@ func Update () {
         fmt.Printf("%v...\n", s.Channel.Display_name)
 
         channelName := strings.ToLower(s.Channel.Display_name)
-        vodID := strconv.Itoa(s.Id)
         imageUrl := s.Preview.Medium
 
         subpath := imagesSubdir + "/" +
@@ -51,6 +50,9 @@ func Update () {
         path := outPath + "/" + subpath
 
         DownloadImage(imageUrl, path)
+
+        archive := TwitchAPIChannelRecentArchive(s.Channel.Id)
+        vodID := string(archive.Id)[1:]
 
         InsertThumb(channelName, roundTime, vodID, subpath)
     }

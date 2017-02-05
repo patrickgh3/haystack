@@ -18,6 +18,7 @@ supervisorctl help
 
 
 Twitch API cheat sheet
+https://dev.twitch.tv/docs
 
 curl -H 'Accept: application/vnd.twitchtv.v5+json' -H 'Client-ID: ' -X GET 'https://api.twitch.tv/kraken/' | python -m json.tool
 /streams/<channel ID>
