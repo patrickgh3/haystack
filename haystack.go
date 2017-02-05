@@ -13,7 +13,14 @@ func main () {
     ReadConfig()
     InitDB()
 
-    // Do an initial update (useful to quickly verify it's working)
+    // Sleep until the next multiple of refresh period
+    now := time.Now()
+    wakeupTime := now.Add(refreshDuration).Truncate(refreshDuration)
+    fmt.Print("Waiting...")
+    time.Sleep(wakeupTime.Sub(now))
+    fmt.Println("Go")
+
+    // Initial update
     Update()
 
     // Start periodic updates
@@ -27,8 +34,8 @@ func main () {
 // Update saves thumbnails of Twitch streams, deletes old ones, and
 // builds a new webpage.
 func Update () {
-    curTime := time.Now()
-    timeString := strconv.FormatInt(curTime.Unix(), 10);
+    roundTime := time.Now().Round(refreshDuration)
+    unixTimeString := strconv.FormatInt(roundTime.Unix(), 10);
 
     sr := TwitchAPIAllStreams("?game=I%20Wanna%20Be%20The%20Guy")
 
@@ -39,21 +46,22 @@ func Update () {
         vodID := strconv.Itoa(s.Id)
         imageUrl := s.Preview.Medium
 
-        subpath := imagesSubdir + "/" + channelName + "_" + timeString + ".jpg"
+        subpath := imagesSubdir + "/" +
+                channelName + "_" + unixTimeString + ".jpg"
         path := outPath + "/" + subpath
 
         DownloadImage(imageUrl, path)
 
-        InsertThumb(channelName, curTime, vodID, subpath)
+        InsertThumb(channelName, roundTime, vodID, subpath)
     }
 
-    BuildWebpage()
+    numDeleted := DeleteOldThumbs(roundTime)
 
-    numDeleted := DeleteOldThumbs()
+    BuildWebpage(roundTime)
 
     fmt.Printf("%v deleted\n", numDeleted)
     fmt.Printf("%v thumbs \n", NumThumbs())
     fmt.Printf("%v jpg files\n", NumFilesInDir(thumbsPath))
-    fmt.Printf("%v unique channels\n", NumUniqueChannels())
+    fmt.Printf("%v distinct channels\n", len(DistinctChannels()))
 }
 

@@ -11,11 +11,11 @@ var db *sql.DB
 const mysqlTimeFormat = "2006-01-02 15:04:05"
 
 type ThumbRow struct {
-    created string
-    channel string
+    Id string
+    Created string
+    Channel string
     VOD string
-    time string
-    image string
+    Image string
 }
 
 // InitDB creates the Database object in the package db variable.
@@ -40,7 +40,7 @@ func InitDB () {
 
 func CurrRowStruct(rows *sql.Rows) *ThumbRow {
     r := new(ThumbRow)
-    rows.Scan(&r.created, &r.channel, &r.VOD, &r.time, &r.image)
+    rows.Scan(&r.Id, &r.Created, &r.Channel, &r.VOD, &r.Image)
     return r
 }
 

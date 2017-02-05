@@ -27,23 +27,40 @@ type WThumb struct {
     VodUrl string
 }
 
+// ColumnOfTime returns which column a certain time corresponds to.
+func ColumnOfTime (t time.Time, roundTime time.Time) int {
+    // TODO: fix timezone offset
+    return int(roundTime.Sub(t).Seconds() / refreshDuration.Seconds()) - 3600
+}
+
 // RebuildWebpage generates an HTML page with up-to-date thumbnail content.
-func BuildWebpage () {
+func BuildWebpage (roundTime time.Time) {
     var pd WebpageData
     pd.BuildTimeStr = time.Now().Format(time.RFC850)
 
-    channelNames := UniqueChannels()
+    // TODO: fix timezone offset
+    numColumns := ColumnOfTime(
+            roundTime.Add(thumbDeleteDuration).Add(time.Duration(-5)*time.Hour),
+            roundTime)
+
+    channelNames := DistinctChannels()
     for i := 0; i < len(channelNames); i++ {
         c := WChannel{Name: channelNames[i]}
-        for i := 0; i < 10; i++ {
+        for i := 0; i < numColumns; i++ {
             t := WThumb{}
             t.Filled = false
-            if (i != 3 && i != 5) {
-                t.ImageUrl = siteBaseUrl + "/images/100x80"
-                t.VodUrl = vodBaseUrl + "/" + "12341234"
-                t.Filled = true
-            }
             c.Thumbs = append(c.Thumbs, t)
+        }
+        thumbs := ChannelThumbs(channelNames[i])
+        for i := 0; i < len(thumbs); i++ {
+            t, err := time.Parse(mysqlTimeFormat, thumbs[i].Created)
+            if err != nil {
+                panic(err)
+            }
+            col := ColumnOfTime(t, roundTime)
+            c.Thumbs[col].Filled = true
+            c.Thumbs[col].ImageUrl = siteBaseUrl + thumbs[i].Image
+            c.Thumbs[col].VodUrl = vodBaseUrl + "/" + thumbs[i].VOD
         }
         pd.Channels = append(pd.Channels, c)
     }

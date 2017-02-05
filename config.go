@@ -16,7 +16,7 @@ var dbUser string
 var dbPass string
 var dbDatabase string
 
-const ThumbDeleteDuration = time.Duration(30) * time.Second * -1
+const thumbDeleteDuration = time.Duration(30) * time.Second * -1
 const imagesSubdir = "/images/t"
 const configFilename = "config"
 const vodBaseUrl = "https://www.twitch.tv/videos"
