@@ -36,6 +36,7 @@ type Preview struct {
 
 type Video struct {
     Id string `json:"_id"`
+    Created_At string
 }
 
 // TwitchAPIAllStreams returns all streams which match a given query.

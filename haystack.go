@@ -31,6 +31,8 @@ func main () {
     }
 }
 
+const vodResponseTimeString = "2006-01-02T15:04:05Z"
+
 // Update saves thumbnails of Twitch streams, deletes old ones, and
 // builds a new webpage.
 func Update () {
@@ -54,7 +56,14 @@ func Update () {
         archive := TwitchAPIChannelRecentArchive(s.Channel.Id)
         vodID := string(archive.Id)[1:]
 
-        InsertThumb(channelName, roundTime, vodID, subpath)
+        vodCreateTime, err := time.Parse(vodResponseTimeString,
+                archive.Created_At)
+        if err != nil {
+            panic(err)
+        }
+        vodTime := time.Time{}.Add(roundTime.Sub(vodCreateTime))
+
+        InsertThumb(channelName, roundTime, vodID, subpath, vodTime)
     }
 
     numDeleted := DeleteOldThumbs(roundTime)

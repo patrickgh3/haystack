@@ -9,6 +9,7 @@ import (
 
 const indexFilepath = "html/index.html"
 var templ = template.Must(template.ParseFiles(indexFilepath))
+const vodUrlTimeFormat = "15h04m05s"
 
 type WebpageData struct {
     BuildTimeStr string
@@ -53,14 +54,21 @@ func BuildWebpage (roundTime time.Time) {
         }
         thumbs := ChannelThumbs(channelNames[i])
         for i := 0; i < len(thumbs); i++ {
-            t, err := time.Parse(mysqlTimeFormat, thumbs[i].Created)
+            t, err := time.Parse(mysqlTimestampFormat, thumbs[i].Created)
             if err != nil {
                 panic(err)
             }
-            col := ColumnOfTime(t, roundTime)
+            vodTime, err := time.Parse(mysqlTimeFormat, thumbs[i].VODTime)
+            if err != nil {
+                panic(err)
+            }
+            vodTimeString := vodTime.Format(vodUrlTimeFormat)
+
+            col := (numColumns-1) - ColumnOfTime(t, roundTime)
             c.Thumbs[col].Filled = true
             c.Thumbs[col].ImageUrl = siteBaseUrl + thumbs[i].Image
-            c.Thumbs[col].VodUrl = vodBaseUrl + "/" + thumbs[i].VOD
+            c.Thumbs[col].VodUrl = vodBaseUrl + "/" + thumbs[i].VOD +
+                    "?t=" + vodTimeString
         }
         pd.Channels = append(pd.Channels, c)
     }
