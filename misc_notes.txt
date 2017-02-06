@@ -1,0 +1,38 @@
+TEST CASE
+japanese twitch name, but still should save image as english. (name vs display_name)
+
+// DeleteLeftoverImages deletes images whose thumbs are no longer in the DB.
+func DeleteLeftoverImages() int {
+    rows, err := db.Query("SELECT imagePath FROM thumbs")
+    if err != nil {
+        panic(err)
+    }
+    var validpaths []string
+    for rows.Next() {
+        r := CurrRowStruct(rows)
+        filepath := outPath + r.Image
+        validpaths = append(validpaths, filepath)
+    }
+    return DeleteAbsentFiles(thumbsPath, &validpaths)
+}
+
+func DeleteAbsentFiles (rootpath string, filenames *[]string) int {
+    numDeleted := 0
+    filepath.Walk(rootpath, func(path string, info os.FileInfo, err error) error {
+        for i := 0; i < len(*filenames); i++ {
+            if info.Name() == (*filenames)[i] {
+                return nil
+            }
+        }
+        // If not found, delete
+        err2 := os.Remove(rootpath + "/" + info.Name())
+        if err2 != nil {
+            fmt.Println("Error removing absent file")
+            fmt.Println(err)
+        }
+        numDeleted ++
+        return nil
+    })
+    return numDeleted
+}
+

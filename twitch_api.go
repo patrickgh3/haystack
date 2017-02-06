@@ -28,6 +28,7 @@ type Stream struct {
 type Channel struct {
     Id int `json:"_id"`
     Display_name string
+    Name string
 }
 
 type Preview struct {

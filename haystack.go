@@ -3,7 +3,6 @@ package main
 import (
     "time"
     "strconv"
-    "strings"
     "fmt"
 )
 
@@ -44,24 +43,29 @@ func Update () {
     for _, s := range sr.Streams {
         fmt.Printf("%v...\n", s.Channel.Display_name)
 
-        channelName := strings.ToLower(s.Channel.Display_name)
+        channelName := s.Channel.Display_name
         imageUrl := s.Preview.Medium
 
         subpath := imagesSubdir + "/" +
-                channelName + "_" + unixTimeString + ".jpg"
+                s.Channel.Name + "_" + unixTimeString + ".jpg"
         path := outPath + "/" + subpath
 
         DownloadImage(imageUrl, path)
 
         archive := TwitchAPIChannelRecentArchive(s.Channel.Id)
-        vodID := string(archive.Id)[1:]
-
-        vodCreateTime, err := time.Parse(vodResponseTimeString,
-                archive.Created_At)
-        if err != nil {
-            panic(err)
+        vodID := ""
+        vodTime := time.Time{}
+        if archive == nil {
+            fmt.Println("WARN: archive was nil")
+        } else {
+            vodID = string(archive.Id)[1:]
+            vodCreateTime, err := time.Parse(vodResponseTimeString,
+                    archive.Created_At)
+            if err != nil {
+                panic(err)
+            }
+            vodTime = time.Time{}.Add(roundTime.Sub(vodCreateTime))
         }
-        vodTime := time.Time{}.Add(roundTime.Sub(vodCreateTime))
 
         InsertThumb(channelName, roundTime, vodID, subpath, vodTime)
     }

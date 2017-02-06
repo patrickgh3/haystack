@@ -24,6 +24,7 @@ type WChannel struct {
 
 type WThumb struct {
     Filled bool
+    HasVod bool
     ImageUrl string
     VodUrl string
 }
@@ -61,6 +62,10 @@ func BuildWebpage (roundTime time.Time) {
             vodTimeString := vodTime.Format(vodUrlTimeFormat)
 
             col := ColumnOfTime(t, roundTime)
+            c.Thumbs[col].HasVod = thumbs[i].VOD != ""
+            /*if thumbs[i].Channel == "paragusrants" {
+                c.Thumbs[col].HasVod = false
+            }*/
             c.Thumbs[col].Filled = true
             c.Thumbs[col].ImageUrl = siteBaseUrl + thumbs[i].Image
             c.Thumbs[col].VodUrl = vodBaseUrl + "/" + thumbs[i].VOD +
