@@ -4,41 +4,43 @@ import (
     "time"
     "strconv"
     "fmt"
+    "github.com/patrickgh3/haystack/config"
+    "github.com/patrickgh3/haystack/database"
 )
 
 // main is the entry point into the program.
 // It initializes stuff and then calls Update periodically.
 func main () {
-    ReadConfig()
-    InitDB()
+    config.ReadConfig()
+    database.InitDB()
 
     // Sleep until the next multiple of refresh period
     now := time.Now()
-    wakeupTime := now.Add(refreshDuration).Truncate(refreshDuration)
+    wakeup := now.Add(config.RefreshDuration).Truncate(config.RefreshDuration)
     fmt.Print("Waiting...")
-    time.Sleep(wakeupTime.Sub(now))
+    time.Sleep(wakeup.Sub(now))
     fmt.Println("Go")
 
     // Initial update
     Update()
 
     // Start periodic updates
-    ticker := time.NewTicker(refreshDuration)
+    ticker := time.NewTicker(config.RefreshDuration)
     for {
         <-ticker.C
         Update()
     }
 }
 
-const vodResponseTimeString = "2006-01-02T15:04:05Z"
-
 // Update saves thumbnails of Twitch streams, deletes old ones, and
 // builds a new webpage.
 func Update () {
-    roundTime := time.Now().Round(refreshDuration)
+    roundTime := time.Now().Round(config.RefreshDuration)
     unixTimeString := strconv.FormatInt(roundTime.Unix(), 10);
 
     sr := TwitchAPIAllStreams("?game=I%20Wanna%20Be%20The%20Guy")
+    //sr := TwitchAPIAllStreams(
+    //        "?community_id=e7912cf2-1f61-46bd-91f8-9187fde84971")
 
     for _, s := range sr.Streams {
         fmt.Printf("%v...\n", s.Channel.Display_name)
@@ -46,9 +48,9 @@ func Update () {
         channelName := s.Channel.Display_name
         imageUrl := s.Preview.Medium
 
-        subpath := imagesSubdir + "/" +
+        subpath := config.ImagesSubdir + "/" +
                 s.Channel.Name + "_" + unixTimeString + ".jpg"
-        path := outPath + "/" + subpath
+        path := config.OutPath + "/" + subpath
 
         DownloadImage(imageUrl, path)
 
@@ -59,24 +61,20 @@ func Update () {
             fmt.Println("WARN: archive was nil")
         } else {
             vodID = string(archive.Id)[1:]
-            vodCreateTime, err := time.Parse(vodResponseTimeString,
-                    archive.Created_At)
-            if err != nil {
-                panic(err)
-            }
+            vodCreateTime := archive.Created_At_Time
             vodTime = time.Time{}.Add(roundTime.Sub(vodCreateTime))
         }
 
-        InsertThumb(channelName, roundTime, vodID, subpath, vodTime)
+        database.InsertThumb(channelName, roundTime, vodID, subpath, vodTime)
     }
 
-    numDeleted := DeleteOldThumbs(roundTime)
+    numDeleted := database.DeleteOldThumbs(roundTime)
 
     BuildWebpage(roundTime)
 
     fmt.Printf("%v deleted\n", numDeleted)
-    fmt.Printf("%v thumbs \n", NumThumbs())
-    fmt.Printf("%v jpg files\n", NumFilesInDir(thumbsPath))
-    fmt.Printf("%v distinct channels\n", len(DistinctChannels()))
+    fmt.Printf("%v thumbs \n", database.NumThumbs())
+    fmt.Printf("%v jpg files\n", NumFilesInDir(config.ThumbsPath))
+    fmt.Printf("%v distinct channels\n", len(database.DistinctChannels()))
 }
 

@@ -4,6 +4,8 @@ import (
     "net/http"
     "encoding/json"
     "fmt"
+    "time"
+    "github.com/patrickgh3/haystack/config"
 )
 
 type StreamsResponse struct {
@@ -38,7 +40,10 @@ type Preview struct {
 type Video struct {
     Id string `json:"_id"`
     Created_At string
+    Created_At_Time time.Time
 }
+
+const videoTimeString = "2006-01-02T15:04:05Z"
 
 // TwitchAPIAllStreams returns all streams which match a given query.
 // See https://dev.twitch.tv/docs/v5/reference/streams/#get-all-streams
@@ -64,6 +69,13 @@ func TwitchAPIChannelVideos (channelID int, queryString string) *VideosResponse 
     urlTail := fmt.Sprintf("/channels/%v/videos%v", channelID, queryString)
     r := new(VideosResponse)
     TwitchAPIGeneralQuery(urlTail, &r)
+    for i := 0; i < len(r.Videos); i++ {
+        t, err := time.Parse(videoTimeString, r.Videos[i].Created_At)
+        if err != nil {
+            panic(err)
+        }
+        r.Videos[i].Created_At_Time = t
+    }
     return r
 }
 
@@ -90,7 +102,7 @@ func TwitchAPIGeneralQuery (urlTail string, v interface{}) {
         panic(err)
     }
     req.Header.Add("Accept", "application/vnd.twitchtv.v5+json")
-    req.Header.Add("Client-ID", apiClientId)
+    req.Header.Add("Client-ID", config.ApiClientId)
 
     // Make request
     response, err := client.Do(req)

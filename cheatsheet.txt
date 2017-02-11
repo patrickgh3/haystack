@@ -36,6 +36,11 @@ Channel IDs
 43248215    Maxinator
 
 
+Community IDs
+e7912cf2-1f61-46bd-91f8-9187fde84971    Fangames
+bd90bf41-f11c-4b77-9267-e4c9dde0bad0    IWannaFangames
+
+
 LOC in project
 find . -name '*.go' | xargs wc -l
 

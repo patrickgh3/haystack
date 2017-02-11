@@ -1,9 +1,10 @@
-package main
+package database
 
 import (
     "time"
     "os"
     "fmt"
+    "github.com/patrickgh3/haystack/config"
 )
 
 // InsertThumb adds a specified entry to the thumbs table.
@@ -74,7 +75,7 @@ func ChannelThumbs (channel string) []ThumbRow {
 // DeleteOldThumbs deletes thumbs entries older than a certain time.
 func DeleteOldThumbs(roundTime time.Time) int {
     cutoffTime := roundTime.Add(
-            -refreshDuration * time.Duration(numRefreshPeriods))
+            -config.RefreshDuration * time.Duration(config.NumRefreshPeriods))
     timeString := cutoffTime.Format(mysqlTimestampFormat)
 
     // Delete image files of matching thumbs
@@ -86,7 +87,7 @@ func DeleteOldThumbs(roundTime time.Time) int {
     defer rows.Close()
     for rows.Next() {
         r := CurrRowStruct(rows)
-        filepath := outPath + r.Image
+        filepath := config.OutPath + r.Image
         err = os.Remove(filepath)
         if err != nil {
             fmt.Println("Error removing old thumb image file")
