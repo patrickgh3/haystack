@@ -97,7 +97,7 @@ func generalQuery (urlTail string, v interface{}) {
         panic(err)
     }
     req.Header.Add("Accept", "application/vnd.twitchtv.v5+json")
-    req.Header.Add("Client-ID", config.ApiClientId)
+    req.Header.Add("Client-ID", config.Twitch.ClientKey)
 
     // Make request
     response, err := client.Do(req)

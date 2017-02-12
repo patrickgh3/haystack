@@ -1,17 +1,19 @@
-package main
+package webpage
 
 import (
     "html/template"
     "os"
     "bufio"
     "time"
+    "github.com/kardianos/osext"
     "github.com/patrickgh3/haystack/config"
     "github.com/patrickgh3/haystack/database"
 )
 
 const indexFilepath = "html/index.html"
-var templ = template.Must(template.ParseFiles(indexFilepath))
+var templ *template.Template
 const vodUrlTimeFormat = "15h04m05s"
+const vodBaseUrl = "https://www.twitch.tv/videos"
 
 type WebpageData struct {
     BuildTimeStr string
@@ -31,10 +33,18 @@ type WThumb struct {
     VodUrl string
 }
 
+func InitTemplate () {
+    ef, err := osext.ExecutableFolder()
+    if err != nil {
+        panic(err)
+    }
+    templ = template.Must(template.ParseFiles(ef + "/" + indexFilepath))
+}
+
 // ColumnOfTime returns which column a certain time corresponds to.
 func ColumnOfTime (t time.Time, roundTime time.Time) int {
-    x := int(roundTime.Sub(t).Seconds() / config.RefreshDuration.Seconds())
-    return (config.NumRefreshPeriods - 1) - x
+    x := int(roundTime.Sub(t).Seconds() / config.Timing.Period.Seconds())
+    return (config.Timing.NumPeriods - 1) - x
 }
 
 // RebuildWebpage generates an HTML page with up-to-date thumbnail content.
@@ -45,7 +55,7 @@ func BuildWebpage (roundTime time.Time) {
     channelNames := database.DistinctChannels()
     for i := 0; i < len(channelNames); i++ {
         c := WChannel{Name: channelNames[i]}
-        for i := 0; i < config.NumRefreshPeriods; i++ {
+        for i := 0; i < config.Timing.NumPeriods; i++ {
             t := WThumb{}
             t.Filled = false
             c.Thumbs = append(c.Thumbs, t)
@@ -62,8 +72,8 @@ func BuildWebpage (roundTime time.Time) {
                 c.Thumbs[col].HasVod = false
             }*/
             c.Thumbs[col].Filled = true
-            c.Thumbs[col].ImageUrl = config.SiteBaseUrl + thumbs[i].Image
-            c.Thumbs[col].VodUrl = config.VodBaseUrl + "/" + thumbs[i].VOD +
+            c.Thumbs[col].ImageUrl = config.Path.SiteUrl + "/" + thumbs[i].Image
+            c.Thumbs[col].VodUrl = vodBaseUrl + thumbs[i].VOD +
                     "?t=" + vodTimeString
         }
         pd.Channels = append(pd.Channels, c)
@@ -71,11 +81,12 @@ func BuildWebpage (roundTime time.Time) {
     pd.NumChannels = len(channelNames)
 
     // Write to html file
-    f, err := os.Create(config.OutPath + "/index.html")
+    f, err := os.Create(config.Path.Root + "/index.html")
     defer f.Close()
     if err != nil {
         panic(err)
     }
+
     w := bufio.NewWriter(f)
     templ.Execute(w, pd)
     w.Flush()

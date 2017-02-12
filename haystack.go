@@ -7,22 +7,24 @@ import (
     "github.com/patrickgh3/haystack/config"
     "github.com/patrickgh3/haystack/database"
     "github.com/patrickgh3/haystack/twitchapi"
+    "github.com/patrickgh3/haystack/webpage"
 )
 
 // main initializes stuff, then calls Update periodically.
 func main () {
     config.ReadConfig()
     database.InitDB()
+    webpage.InitTemplate()
 
     // Sleep until the next multiple of refresh period
     now := time.Now()
-    wakeup := now.Add(config.RefreshDuration).Truncate(config.RefreshDuration)
+    wakeup := now.Add(config.Timing.Period).Truncate(config.Timing.Period)
     fmt.Print("Waiting...")
     time.Sleep(wakeup.Sub(now))
     fmt.Println("Go")
 
     // Periodic updates
-    ticker := time.NewTicker(config.RefreshDuration)
+    ticker := time.NewTicker(config.Timing.Period)
     Update() // Initial update
     for {
         <-ticker.C
@@ -32,7 +34,7 @@ func main () {
 
 // Update grabs new thumbnails, deletes old ones, and generates the webpage.
 func Update () {
-    roundTime := time.Now().Round(config.RefreshDuration)
+    roundTime := time.Now().Round(config.Timing.Period)
     unixTimeString := strconv.FormatInt(roundTime.Unix(), 10);
 
     sr := twitchapi.AllStreams("?game=I%20Wanna%20Be%20The%20Guy")
@@ -42,7 +44,7 @@ func Update () {
     for _, stream := range sr.Streams {
         fmt.Printf("%v...\n", stream.Channel.Display_name)
 
-        imagePath := config.ImagesSubdir + "/" +
+        imagePath := config.Path.ImagesRelative + "/" +
                 stream.Channel.Name + "_" + unixTimeString + ".jpg"
         channelName := stream.Channel.Display_name
 
@@ -58,7 +60,7 @@ func Update () {
             vodTime = time.Time{}.Add(roundTime.Sub(archive.Created_At_Time))
         }
 
-        imageDLPath := config.OutPath + "/" + imagePath
+        imageDLPath := config.Path.Root + "/" + imagePath
         imageUrl := stream.Preview.Medium
 
         DownloadImage(imageUrl, imageDLPath)
@@ -68,11 +70,11 @@ func Update () {
 
     numDeleted := database.DeleteOldThumbs(roundTime)
 
-    BuildWebpage(roundTime)
+    webpage.BuildWebpage(roundTime)
 
     fmt.Printf("%v deleted\n", numDeleted)
     fmt.Printf("%v thumbs \n", database.NumThumbs())
-    fmt.Printf("%v jpg files\n", NumFilesInDir(config.ThumbsPath))
+    fmt.Printf("%v jpg files\n", NumFilesInDir(config.Path.Images))
     fmt.Printf("%v distinct channels\n", len(database.DistinctChannels()))
 }
 

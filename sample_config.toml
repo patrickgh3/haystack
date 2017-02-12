@@ -1,9 +1,0 @@
-out_path = "/var/html/a/b/c/"
-site_url = "https://haystack.google.com"
-client_id = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-db_user = "XXXXX"
-db_pass = "XXXXX"
-db_database = "XXXXX"
-period_seconds = 30
-num_periods = 15
-

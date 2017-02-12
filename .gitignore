@@ -1,4 +1,0 @@
-# Testing directory
-# (not using $GOPATH/bin/ because program reads config file from its directory)
-test
-

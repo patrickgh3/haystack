@@ -1,6 +1,11 @@
 TEST CASE
 japanese twitch name, but still should save image as english. (name vs display_name)
 
+
+Don't make example files like example_config.toml, because you will eventually
+forget to update it when code changes, then it's actively unhelpful.
+
+
 // DeleteLeftoverImages deletes images whose thumbs are no longer in the DB.
 func DeleteLeftoverImages() int {
     rows, err := db.Query("SELECT imagePath FROM thumbs")

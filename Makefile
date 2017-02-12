@@ -1,11 +1,10 @@
 all: haystack
 
-haystack: *.go
-	./inst.sh
+haystack: *
+	go install
+	cp $$GOPATH/bin/haystack ~/haystack-test/
+	cp -r $$GOPATH/src/github.com/patrickgh3/haystack/html/ ~/haystack-test/html/
 
 run: haystack
-	test/haystack
-
-clean:
-	rm test/haystack
+	~/haystack-test/haystack
 

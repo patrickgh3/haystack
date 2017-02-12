@@ -24,7 +24,7 @@ type ThumbRow struct {
     VODTimeTime time.Time
 }
 
-// InitDB creates the Database object in the package db variable.
+// InitDB initializes the database.
 func InitDB () {
     // Don't open new database if db is already set
     if db != nil {
@@ -32,7 +32,7 @@ func InitDB () {
     }
 
     dataSourceName := fmt.Sprintf("%v:%v@/%v",
-            config.DbUser, config.DbPass, config.DbDatabase)
+            config.DB.User, config.DB.Pass, config.DB.DBName)
     var err error
     db, err = sql.Open("mysql", dataSourceName)
     if err != nil {
