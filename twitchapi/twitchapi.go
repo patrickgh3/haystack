@@ -1,20 +1,17 @@
-package main
+package twitchapi
 
 import (
     "net/http"
     "encoding/json"
     "fmt"
     "time"
+    "strconv"
     "github.com/patrickgh3/haystack/config"
 )
 
 type StreamsResponse struct {
     Total int `json:"_total"`
     Streams []*Stream
-}
-
-type StreamResponse struct {
-    Stream *Stream
 }
 
 type VideosResponse struct {
@@ -28,7 +25,8 @@ type Stream struct {
 }
 
 type Channel struct {
-    Id int `json:"_id"`
+    IdInt int `json:"_id"`
+    Id string
     Display_name string
     Name string
 }
@@ -45,43 +43,40 @@ type Video struct {
 
 const videoTimeString = "2006-01-02T15:04:05Z"
 
-// TwitchAPIAllStreams returns all streams which match a given query.
+// AllStreams returns all streams which match a given query.
 // See https://dev.twitch.tv/docs/v5/reference/streams/#get-all-streams
-func TwitchAPIAllStreams (queryString string) *StreamsResponse {
+func AllStreams (queryString string) *StreamsResponse {
     urlTail := fmt.Sprintf("/streams/%v", queryString)
     r := new(StreamsResponse)
-    TwitchAPIGeneralQuery(urlTail, &r)
-    return r
-}
+    generalQuery(urlTail, &r)
 
-// TwitchAPIStreamByChannel returns a stream corresponding to a channel ID.
-// See https://dev.twitch.tv/docs/v5/reference/streams/#get-stream-by-channel
-func TwitchAPIStreamByChannel (channelID int) *StreamResponse {
-    urlTail := fmt.Sprintf("/streams/%v", channelID)
-    r := new(StreamResponse)
-    TwitchAPIGeneralQuery(urlTail, &r)
-    return r
-}
-
-// TwitchAPIChannelVideos returns the videos from a channel.
-// See https://dev.twitch.tv/docs/v5/reference/channels/#get-channel-videos
-func TwitchAPIChannelVideos (channelID int, queryString string) *VideosResponse {
-    urlTail := fmt.Sprintf("/channels/%v/videos%v", channelID, queryString)
-    r := new(VideosResponse)
-    TwitchAPIGeneralQuery(urlTail, &r)
-    for i := 0; i < len(r.Videos); i++ {
-        t, err := time.Parse(videoTimeString, r.Videos[i].Created_At)
-        if err != nil {
-            panic(err)
-        }
-        r.Videos[i].Created_At_Time = t
+    for _, stream := range r.Streams {
+        stream.Channel.Id = strconv.Itoa(stream.Channel.IdInt)
     }
     return r
 }
 
-// TwitchAPIChannelRecentArchive returns the most recent archive video.
-func TwitchAPIChannelRecentArchive (channelID int) *Video {
-    vr := TwitchAPIChannelVideos (channelID,
+// ChannelVideos returns the videos from a channel.
+// See https://dev.twitch.tv/docs/v5/reference/channels/#get-channel-videos
+func ChannelVideos (channelID string, queryString string) *VideosResponse {
+    urlTail := fmt.Sprintf("/channels/%v/videos%v", channelID, queryString)
+    r := new(VideosResponse)
+    generalQuery(urlTail, &r)
+
+    for _, v := range r.Videos {
+        t, err := time.Parse(videoTimeString, v.Created_At)
+        if err != nil {
+            panic(err)
+        }
+        v.Created_At_Time = t
+        v.Id = v.Id[1:] // Strip leading "v"
+    }
+    return r
+}
+
+// ChannelRecentArchive returns a channel's most recent archive video.
+func ChannelRecentArchive (channelID string) *Video {
+    vr := ChannelVideos (channelID,
             "?broadcast_type=archive&sort=time&limit=1")
     if vr.Total == 0 {
         return nil
@@ -89,8 +84,8 @@ func TwitchAPIChannelRecentArchive (channelID int) *Video {
     return vr.Videos[0]
 }
 
-// TwitchAPIGeneralQuery performs an API query and parses the JSON response.
-func TwitchAPIGeneralQuery (urlTail string, v interface{}) {
+// generalQuery performs an API query and parses the JSON response.
+func generalQuery (urlTail string, v interface{}) {
     url := fmt.Sprintf(
             "https://api.twitch.tv/kraken%v",
             urlTail,

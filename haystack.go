@@ -6,10 +6,10 @@ import (
     "fmt"
     "github.com/patrickgh3/haystack/config"
     "github.com/patrickgh3/haystack/database"
+    "github.com/patrickgh3/haystack/twitchapi"
 )
 
-// main is the entry point into the program.
-// It initializes stuff and then calls Update periodically.
+// main initializes stuff, then calls Update periodically.
 func main () {
     config.ReadConfig()
     database.InitDB()
@@ -21,51 +21,49 @@ func main () {
     time.Sleep(wakeup.Sub(now))
     fmt.Println("Go")
 
-    // Initial update
-    Update()
-
-    // Start periodic updates
+    // Periodic updates
     ticker := time.NewTicker(config.RefreshDuration)
+    Update() // Initial update
     for {
         <-ticker.C
         Update()
     }
 }
 
-// Update saves thumbnails of Twitch streams, deletes old ones, and
-// builds a new webpage.
+// Update grabs new thumbnails, deletes old ones, and generates the webpage.
 func Update () {
     roundTime := time.Now().Round(config.RefreshDuration)
     unixTimeString := strconv.FormatInt(roundTime.Unix(), 10);
 
-    sr := TwitchAPIAllStreams("?game=I%20Wanna%20Be%20The%20Guy")
+    sr := twitchapi.AllStreams("?game=I%20Wanna%20Be%20The%20Guy")
     //sr := TwitchAPIAllStreams(
     //        "?community_id=e7912cf2-1f61-46bd-91f8-9187fde84971")
 
-    for _, s := range sr.Streams {
-        fmt.Printf("%v...\n", s.Channel.Display_name)
+    for _, stream := range sr.Streams {
+        fmt.Printf("%v...\n", stream.Channel.Display_name)
 
-        channelName := s.Channel.Display_name
-        imageUrl := s.Preview.Medium
+        imagePath := config.ImagesSubdir + "/" +
+                stream.Channel.Name + "_" + unixTimeString + ".jpg"
+        channelName := stream.Channel.Display_name
 
-        subpath := config.ImagesSubdir + "/" +
-                s.Channel.Name + "_" + unixTimeString + ".jpg"
-        path := config.OutPath + "/" + subpath
-
-        DownloadImage(imageUrl, path)
-
-        archive := TwitchAPIChannelRecentArchive(s.Channel.Id)
-        vodID := ""
-        vodTime := time.Time{}
+        archive := twitchapi.ChannelRecentArchive(stream.Channel.Id)
+        var vodID string
+        var vodTime time.Time
         if archive == nil {
             fmt.Println("WARN: archive was nil")
+            vodID = ""
+            vodTime = time.Time{}
         } else {
-            vodID = string(archive.Id)[1:]
-            vodCreateTime := archive.Created_At_Time
-            vodTime = time.Time{}.Add(roundTime.Sub(vodCreateTime))
+            vodID = archive.Id
+            vodTime = time.Time{}.Add(roundTime.Sub(archive.Created_At_Time))
         }
 
-        database.InsertThumb(channelName, roundTime, vodID, subpath, vodTime)
+        imageDLPath := config.OutPath + "/" + imagePath
+        imageUrl := stream.Preview.Medium
+
+        DownloadImage(imageUrl, imageDLPath)
+
+        database.InsertThumb(channelName, roundTime, vodID, imagePath, vodTime)
     }
 
     numDeleted := database.DeleteOldThumbs(roundTime)
