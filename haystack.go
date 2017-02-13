@@ -16,9 +16,14 @@ func main () {
     database.InitDB()
     webpage.InitTemplate()
 
-    // Sleep until the next multiple of refresh period
+    // Initial page rebuild
     now := time.Now()
-    wakeup := now.Add(config.Timing.Period).Truncate(config.Timing.Period)
+    roundTime := now.Round(config.Timing.Period)
+    database.DeleteOldThumbs(roundTime)
+    webpage.BuildWebpage(roundTime)
+
+    // Sleep until the next multiple of refresh period
+    wakeup := roundTime.Add(config.Timing.Period)
     fmt.Print("Waiting...")
     time.Sleep(wakeup.Sub(now))
     fmt.Println("Go")
@@ -60,7 +65,7 @@ func Update () {
             vodTime = time.Time{}.Add(roundTime.Sub(archive.Created_At_Time))
         }
 
-        imageDLPath := config.Path.Root + "/" + imagePath
+        imageDLPath := config.Path.Root + imagePath
         imageUrl := stream.Preview.Medium
 
         DownloadImage(imageUrl, imageDLPath)

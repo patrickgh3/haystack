@@ -12,7 +12,7 @@ import (
 
 const indexFilepath = "html/index.html"
 const vodUrlTimeFormat = "15h04m05s"
-const vodBaseUrl = "https://www.twitch.tv/videos"
+const vodBaseUrl = "https://www.twitch.tv/videos/"
 const labelTimeFormat = "Mon Jan 2 15:04 MST"
 
 var templ *template.Template
@@ -85,12 +85,13 @@ func BuildWebpage (roundTime time.Time) {
             vodTimeString := thumb.VODTimeTime.Format(vodUrlTimeFormat)
 
             col := columnOfTime(t, roundTime)
+            // TODO: warn if too old or too new thumb is present at this point
             c.Thumbs[col].HasVod = thumb.VOD != ""
             /*if thumb.Channel == "DestinationMystery" {
                 c.Thumbs[col].HasVod = false
             }*/
             c.Thumbs[col].Filled = true
-            c.Thumbs[col].ImageUrl = config.Path.SiteUrl + "/" + thumb.Image
+            c.Thumbs[col].ImageUrl = config.Path.SiteUrl + thumb.Image
             c.Thumbs[col].VodUrl = vodBaseUrl + thumb.VOD +
                     "?t=" + vodTimeString
         }
