@@ -13,7 +13,7 @@ import (
 const indexFilepath = "html/index.html"
 const vodUrlTimeFormat = "15h04m05s"
 const vodBaseUrl = "https://www.twitch.tv/videos/"
-const labelTimeFormat = "Mon Jan 2 15:04 MST"
+const labelTimeFormat = "Monday 3pm MST"
 
 var templ *template.Template
 

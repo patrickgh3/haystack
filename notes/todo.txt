@@ -1,0 +1,8 @@
+
+Javascript timezone markers (+ fallback?)
+number currently live counter
+Name clickable, goes to past broadcasts page
+Record stream title and title changes, below pictures
+Place streams puzzle-pieced close together instead of unique channel y positions
+Include channel name in the spot to the left of each stream
+

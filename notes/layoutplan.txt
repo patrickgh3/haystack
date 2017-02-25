@@ -1,0 +1,38 @@
+
+
+streams = stream[]
+for each channel:
+    curStream = []
+    for each thumb of that channel order by ascending time::
+        curpos = thumb.pos()
+        if curpos - lastpos > 1:
+            streams.add(curStream)
+            curStream = [thumb]
+        else:
+            curStream.append(thumb)
+        lastpos = curpos
+    streams.add(curStream)
+
+
+
+    ###..@@@@@..&&&&&
+    $$$$$....%%....##
+    ....&&&&&&..$....
+
+
+
+start table being empty
+we don't know the height of the table; needs to be dynamic.
+order streams by starting point 
+put first stream in the top row.
+for the next stream, find the first free row from the top (at that starting point), creating new row at bottom if necessary, and put it there.
+do that last step for each stream. :)
+
+
+
+should we prefer to keep multiple streams by the same person on the same line?
+well, is this an easy feature to add so we can test out if it bloats the view too much?
+probably easy to add, but on second thought it might make the display confusing. hmmm. manually searching for a certain name is probably fast enough.
+
+
+

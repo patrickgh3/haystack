@@ -11,40 +11,42 @@ body {
     -moz-osx-font-smoothing: grayscale;
     letter-spacing: 0.02em;
 }
-#main-table { width: auto; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
-  td { min-width: 120px; max-width: 120px; height: 90px; }
-  .channelname { max-width: 300px; min-width: 300px; }
-    td h2 { text-align: center;}
-    td .hov { background-color: white; display: inline-block; vertical-align: top; }
-      .hov:hover { opacity: .7 }
-      .hov a { width: 100%; height: 100%; }
-        .hov a img { width: 100%; height: 100%; display: block; }
+p { margin: 1em; font-size: 1.5em; }
+table { border-spacing: 0; }
+  td { min-width: 120px; max-width: 120px; height: 90px; /*border: 1px dashed black; box-sizing: border-box;*/ }
+  .channelname { font-size: 1.5em; text-align: right; direction: rtl; padding-right: 0.5em; }
+  .timelabel { font-weight: bold; font-size: 1.5em; color: green; text-align: center; }
+    td .hov { background-color: white; }
+      .hov a img { width: 100%; height: 100%; display: block; }
+      .hov:hover { opacity: .7; }
     td .no-vod { display: inline-block }
       .no-vod img { width: 100%; height: 100%; display: block; }
-      .no-vod .no-vod-text { position: absolute; width: 120px; font-size: 8pt; background-color: red; color: white; font-weight: bold; text-align: center; }
-    td .timelabel { color: green; }
+      .no-vod .no-vod-text { width: 100%; font-size: 0.7em; background-color: red; color: white; font-weight: bold; text-align: center; /* position: absolute; width: 120px; */}
     </style>
   </head>
   <body>
 
-    <p>Build time: {{.BuildTimeStr}}</p>
-    <p>{{.NumChannels}} channels</p>
+    <p>Browse Twitch VODs of recent fangame streams</p>
 
-    <table id="main-table">
+    <table>
       <tr>
-        <td class="channelname"></td>
+        <td></td>
+        <td></td>
+
         {{range $l := $.TimeLabels}}
-          <td>
           {{if $l}}
-            <div class="timelabel">{{$l}}</div>
+          <td class="timelabel">{{$l}}</td>
+          {{else}}
+          <td></td>
           {{end}}
-          </td>
         {{end}}
       </tr>
 
       {{range $c := $.Channels}}
       <tr>
-        <td><h2>{{$c.Name}}</h2></td>
+        <td></td>
+        <td class="channelname">{{$c.Name}}</td>
+
         {{range $t := $c.Thumbs}}
         {{if $t.Filled}}
         <td>
@@ -57,7 +59,7 @@ body {
             {{else}}
           <div class="no-vod">
             <img src="{{$t.ImageUrl}}">
-            <div class="no-vod-text">^ No VOD</div>
+            <div class="no-vod-text">No VOD</div>
           </div>
             {{end}}
         </td>
