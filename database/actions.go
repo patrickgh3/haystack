@@ -55,11 +55,13 @@ func DistinctChannels () []string {
     return channels
 }
 
-// ChannelThumbs returns a list of all thumbs belonging to a given channel.
-func ChannelThumbs (channel string) []ThumbRow {
+// ChannelThumbsTimeAscending returns all thumbs of a channel, oldest first.
+func ChannelThumbsTimeAscending (channel string) []ThumbRow {
     var thumbs []ThumbRow
 
-    rows, err := db.Query("SELECT * FROM thumbs WHERE channel=(?)", channel)
+    rows, err := db.Query(
+            "SELECT * FROM thumbs WHERE channel=(?) ORDER BY created ASC",
+            channel)
     if err != nil {
         panic(err)
     }

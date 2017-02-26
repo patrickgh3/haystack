@@ -5,6 +5,7 @@ import (
     "os"
     "bufio"
     "time"
+    "sort"
     "github.com/kardianos/osext"
     "github.com/patrickgh3/haystack/config"
     "github.com/patrickgh3/haystack/database"
@@ -20,21 +21,32 @@ var templ *template.Template
 type WebpageData struct {
     BuildTimeStr string
     NumChannels int
-    Channels []Channel
+    Cells [][]Cell
     TimeLabels []string
 }
 
-type Channel struct {
-    Name string
-    Thumbs []Thumb
-}
-
-type Thumb struct {
+type Cell struct {
     Filled bool
+    Type int
+
+    ChannelName string
+
     HasVod bool
     ImageUrl string
     VodUrl string
 }
+
+type Stream struct {
+    StartPos int
+    ChannelName string
+    Thumbs []database.ThumbRow
+}
+
+// ByStart implements sort.Interface for []Stream
+type ByStart []Stream
+func (b ByStart) Len() int { return len(b) }
+func (b ByStart) Swap(i, j int) { b[i], b[j] = b[j], b[i] }
+func (b ByStart) Less(i, j int) bool { return b[i].StartPos < b[j].StartPos }
 
 func InitTemplate () {
     ef, err := osext.ExecutableFolder()
@@ -55,7 +67,7 @@ func timeOfColumn (col int, roundTime time.Time) time.Time {
     return roundTime.Add(deltaT)
 }
 
-// RebuildWebpage generates an HTML page with up-to-date thumbnail content.
+// BuildWebpage generates an HTML page with up-to-date thumbnail content.
 func BuildWebpage (roundTime time.Time) {
     var pd WebpageData
     pd.BuildTimeStr = time.Now().Format(time.RFC850)
@@ -70,34 +82,61 @@ func BuildWebpage (roundTime time.Time) {
     }
 
     channelNames := database.DistinctChannels()
-    for _, channelName := range channelNames {
-        c := Channel{Name: channelName}
-        for i := 0; i < config.Timing.NumPeriods; i++ {
-            t := Thumb{}
-            t.Filled = false
-            c.Thumbs = append(c.Thumbs, t)
-        }
+    pd.NumChannels = len(channelNames)
 
-        thumbs := database.ChannelThumbs(channelName)
-        for _, thumb := range thumbs {
+    // Create list of streams from the database
+    var streams []Stream
+    for _, channelName := range channelNames {
+        thumbs := database.ChannelThumbsTimeAscending(channelName)
+        var curStream Stream
+        var lastpos int
+        for i, thumb := range thumbs {
             // TODO: fix timezone offset
             t := thumb.CreatedTime.Add(time.Duration(5) * time.Hour)
-            vodTimeString := thumb.VODTimeTime.Format(vodUrlTimeFormat)
+            curpos := columnOfTime(t, roundTime)
+            if curpos - lastpos > 1 || i == 0 {
+                if i != 0 {
+                    streams = append(streams, curStream)
+                }
+                curStream = Stream{ChannelName:channelName}
+                curStream.StartPos = curpos
+            }
+            curStream.Thumbs = append(curStream.Thumbs, thumb)
+            lastpos = curpos
+        }
+        streams = append(streams, curStream)
+    }
 
-            col := columnOfTime(t, roundTime)
-            // TODO: warn if too old or too new thumb is present at this point
-            c.Thumbs[col].HasVod = thumb.VOD != ""
-            /*if thumb.Channel == "DestinationMystery" {
-                c.Thumbs[col].HasVod = false
-            }*/
-            c.Thumbs[col].Filled = true
-            c.Thumbs[col].ImageUrl = config.Path.SiteUrl + thumb.Image
-            c.Thumbs[col].VodUrl = vodBaseUrl + thumb.VOD +
+    sort.Sort(ByStart(streams))
+
+    // Insert each stream into available rows, or a newly created row.
+    for _, stream := range streams {
+        // Find or make a row r that we can insert this stream into
+        valid := func(row int, pos int) bool {
+            return !pd.Cells[row][pos].Filled &&
+                (pos-1 < 0 || !pd.Cells[row][pos-1].Filled) &&
+                (pos-2 < 0 || !pd.Cells[row][pos-2].Filled)
+        }
+        var r int
+        for r = 0; r < len(pd.Cells); r++ {
+            if valid(r, stream.StartPos) {
+                break
+            }
+        }
+        if r == len(pd.Cells) {
+            pd.Cells = append(pd.Cells, make([]Cell, config.Timing.NumPeriods))
+        }
+
+        // Insert the stream into row r
+        for d, thumb := range stream.Thumbs {
+            pd.Cells[r][stream.StartPos+d].Filled = true
+            pd.Cells[r][stream.StartPos+d].HasVod = thumb.VOD != ""
+            pd.Cells[r][stream.StartPos+d].ImageUrl = config.Path.SiteUrl + thumb.Image
+            vodTimeString := thumb.VODTimeTime.Format(vodUrlTimeFormat)
+            pd.Cells[r][stream.StartPos+d].VodUrl = vodBaseUrl + thumb.VOD +
                     "?t=" + vodTimeString
         }
-        pd.Channels = append(pd.Channels, c)
     }
-    pd.NumChannels = len(channelNames)
 
     // Write to html file
     f, err := os.Create(config.Path.Root + "/index.html")
