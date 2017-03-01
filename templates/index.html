@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Haystack</title>
+        <style>
+* { margin: 0; padding: 0; }
+body {
+    color: #212121;
+    font-family: "Helvetica Neue", "Calibri Light", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: 0.02em;
+    background-color: #111;
+    color: #ddd;
+}
+.left { position: absolute; width: 250px; display: inline-block; }
+    .left p { margin: 1em; font-size: 1.5em; }
+.right { position: absolute; left: 300px; display: inline-block; }
+table { border-spacing: 0; }
+    td { min-width: 120px; max-width: 120px; width: 120px; min-height: 90px; max-height: 90px; height: 90px; }
+    .timelabel { height: 50px; font-size: 1.5em; white-space: nowrap; font-weight: bold; }
+        td .channelname { height: 100%; vertical-align: top; text-align: right; direction: rtl; padding-right: 0.3em; font-size: 1.5em; font-weight: bold; }
+        td .thumb { background-color: white; position: relative; }
+        td .thumb-novod { background-color: red; background-image: url("images/novod.png"); background-size: contain; }
+            .thumb img:hover { opacity: .7; }
+            .thumb-novod img:hover { opacity: .5; }
+            .thumb img { width: 100%; height: auto; display: block; }
+        </style>
+    </head>
+    <body>
+
+        <div class="left">
+            <p>Browse Twitch VODs of recent fangame streams</p>
+        </div>
+        <div class="right">
+
+<table>
+    <tr>
+        <td class="timelabel"></td>
+
+        {{range $l := $.TimeLabels}}
+            {{if $l}}
+            <td class="timelabel">{{$l}}</td>
+            {{else}}
+            <td class="timelabel"></td>
+            {{end}}
+        {{end}}
+    </tr>
+
+    {{range $r := $.Cells}}
+        <tr>
+        {{range $c := $r}}
+            {{if $c.Filled}}
+                {{if eq $c.Type 0}}
+                    <td>
+                    {{if $c.HasVod}}
+                        <div class="thumb">
+                            <a href="{{$c.VodUrl}}" target="_blank">
+                                <img src="{{$c.ImageUrl}}">
+                            </a>
+                        </div>
+                    {{else}}
+                        <div class="thumb thumb-novod">
+                            <img src="{{$c.ImageUrl}}">
+                        </div>
+                    {{end}}
+                {{else if eq $c.Type 1}}
+                    <td>
+                        <div class="channelname">{{$c.ChannelName}}</div>
+                    </td>
+                {{end}}
+                    </td>
+            {{else}}
+                <td></td>
+            {{end}}
+        {{end}}
+        </tr>
+    {{end}}
+</table>
+
+        </div>
+
+    </body>
+</html>
+

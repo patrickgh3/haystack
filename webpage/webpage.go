@@ -11,7 +11,7 @@ import (
     "github.com/patrickgh3/haystack/database"
 )
 
-const indexFilepath = "html/index.html"
+const indexFilepath = "templates/index.html"
 const vodUrlTimeFormat = "15h04m05s"
 const vodBaseUrl = "https://www.twitch.tv/videos/"
 const labelTimeFormat = "Monday 3pm MST"
@@ -21,7 +21,7 @@ var templ *template.Template
 type WebpageData struct {
     BuildTimeStr string
     NumChannels int
-    Cells [][]Cell
+    Cells [][]*Cell
     TimeLabels []string
 }
 
@@ -58,11 +58,11 @@ func InitTemplate () {
 
 func columnOfTime (t time.Time, roundTime time.Time) int {
     x := int(roundTime.Sub(t).Seconds() / config.Timing.Period.Seconds())
-    return (config.Timing.NumPeriods - 1) - x
+    return (config.Timing.NumPeriods - 1) - x + 1
 }
 
 func timeOfColumn (col int, roundTime time.Time) time.Time {
-    columnsFromRight := (config.Timing.NumPeriods - 1) - col
+    columnsFromRight := (config.Timing.NumPeriods - 1) - (col - 1)
     deltaT := config.Timing.Period * time.Duration(-columnsFromRight)
     return roundTime.Add(deltaT)
 }
@@ -86,14 +86,15 @@ func BuildWebpage (roundTime time.Time) {
 
     // Create list of streams from the database
     var streams []Stream
+    var curStream Stream
+    var lastpos int
     for _, channelName := range channelNames {
         thumbs := database.ChannelThumbsTimeAscending(channelName)
-        var curStream Stream
-        var lastpos int
         for i, thumb := range thumbs {
             // TODO: fix timezone offset
             t := thumb.CreatedTime.Add(time.Duration(5) * time.Hour)
             curpos := columnOfTime(t, roundTime)
+            // Detect gap and start new stream
             if curpos - lastpos > 1 || i == 0 {
                 if i != 0 {
                     streams = append(streams, curStream)
@@ -101,15 +102,15 @@ func BuildWebpage (roundTime time.Time) {
                 curStream = Stream{ChannelName:channelName}
                 curStream.StartPos = curpos
             }
+            // Always append thumb to current stream
             curStream.Thumbs = append(curStream.Thumbs, thumb)
             lastpos = curpos
         }
         streams = append(streams, curStream)
     }
-
     sort.Sort(ByStart(streams))
 
-    // Insert each stream into available rows, or a newly created row.
+    // Insert streams into cells
     for _, stream := range streams {
         // Find or make a row r that we can insert this stream into
         valid := func(row int, pos int) bool {
@@ -124,16 +125,25 @@ func BuildWebpage (roundTime time.Time) {
             }
         }
         if r == len(pd.Cells) {
-            pd.Cells = append(pd.Cells, make([]Cell, config.Timing.NumPeriods))
+            pd.Cells = append(pd.Cells, make([]*Cell, config.Timing.NumPeriods+1))
+            for i := 0; i < config.Timing.NumPeriods+1; i++ {
+                pd.Cells[len(pd.Cells)-1][i] = &Cell{};
+            }
         }
 
         // Insert the stream into row r
+        cell := pd.Cells[r][stream.StartPos-1]
+        cell.Filled = true
+        cell.Type = 1
+        cell.ChannelName = stream.ChannelName
         for d, thumb := range stream.Thumbs {
-            pd.Cells[r][stream.StartPos+d].Filled = true
-            pd.Cells[r][stream.StartPos+d].HasVod = thumb.VOD != ""
-            pd.Cells[r][stream.StartPos+d].ImageUrl = config.Path.SiteUrl + thumb.Image
+            cell := pd.Cells[r][stream.StartPos+d]
+            cell.Filled = true
+            cell.Type = 0
+            cell.HasVod = thumb.VOD != ""
+            cell.ImageUrl = config.Path.SiteUrl + thumb.Image
             vodTimeString := thumb.VODTimeTime.Format(vodUrlTimeFormat)
-            pd.Cells[r][stream.StartPos+d].VodUrl = vodBaseUrl + thumb.VOD +
+            cell.VodUrl = vodBaseUrl + thumb.VOD +
                     "?t=" + vodTimeString
         }
     }
