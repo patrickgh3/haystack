@@ -14,7 +14,8 @@ import (
 const indexFilepath = "templates/index.html"
 const vodUrlTimeFormat = "15h04m05s"
 const vodBaseUrl = "https://www.twitch.tv/videos/"
-const labelTimeFormat = "Monday 3pm MST"
+const labelTimeFormat = "Monday 2006-01-02"
+const labelSpace = 8
 
 var templ *template.Template
 
@@ -113,10 +114,14 @@ func BuildWebpage (roundTime time.Time) {
     // Insert streams into cells
     for _, stream := range streams {
         // Find or make a row r that we can insert this stream into
+        spaceLeft := 6
         valid := func(row int, pos int) bool {
-            return !pd.Cells[row][pos].Filled &&
-                (pos-1 < 0 || !pd.Cells[row][pos-1].Filled) &&
-                (pos-2 < 0 || !pd.Cells[row][pos-2].Filled)
+            for i := 0; i <= spaceLeft; i++ {
+                if pos-i < 0 || pd.Cells[row][pos-i].Filled {
+                    return false
+                }
+            }
+            return true
         }
         var r int
         for r = 0; r < len(pd.Cells); r++ {
@@ -141,6 +146,7 @@ func BuildWebpage (roundTime time.Time) {
             cell.Filled = true
             cell.Type = 0
             cell.HasVod = thumb.VOD != ""
+            //cell.HasVod = false
             cell.ImageUrl = config.Path.SiteUrl + thumb.Image
             vodTimeString := thumb.VODTimeTime.Format(vodUrlTimeFormat)
             cell.VodUrl = vodBaseUrl + thumb.VOD +

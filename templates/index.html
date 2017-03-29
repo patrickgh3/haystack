@@ -2,6 +2,7 @@
 <html>
     <head>
         <title>Haystack</title>
+        <script type="text/javascript" src="js/magnify.js"></script>
         <style>
 * { margin: 0; padding: 0; }
 body {
@@ -13,22 +14,28 @@ body {
     background-color: #111;
     color: #ddd;
 }
+#magnifier { position: absolute; visibility: hidden; z-index: 1; background-image: url("images/novod.png"); background-size: contain; border: 3px solid white; }
+    #magnifier img { display: block; width: 320px; height: auto; }
 .left { position: absolute; width: 250px; display: inline-block; }
-    .left p { margin: 1em; font-size: 1.5em; }
+    .left p { margin: 5em 1em; font-size: 1.5em; }
 .right { position: absolute; left: 300px; display: inline-block; }
 table { border-spacing: 0; }
-    td { min-width: 120px; max-width: 120px; width: 120px; min-height: 90px; max-height: 90px; height: 90px; }
-    .timelabel { height: 50px; font-size: 1.5em; white-space: nowrap; font-weight: bold; }
+    td { min-width: 30px; max-width: 30px; width: 30px; min-height: 50px; max-height: 50px; height: 50px; }
+    .timelabel { height: 50px; font-size: 1.5em; white-space: nowrap; font-weight: bold; direction: rtl; text-align: right; }
         td .channelname { height: 100%; vertical-align: top; text-align: right; direction: rtl; padding-right: 0.3em; font-size: 1.5em; font-weight: bold; }
-        td .thumb { background-color: white; position: relative; }
-        td .thumb-novod { background-color: red; background-image: url("images/novod.png"); background-size: contain; }
+        td .thumb { background-color: white; position: relative; overflow: hidden; }
+        td .thumb-novod { background-color: red; }
             .thumb img:hover { opacity: .7; }
-            .thumb-novod img:hover { opacity: .5; }
-            .thumb img { width: 100%; height: auto; display: block; }
+            .thumb-novod img:hover { opacity: .7; }
+            .thumb img { width: auto; height: 50px; display: block; margin-left: -30px; }
             .thumb .backing { position: absolute; width: 140px; left: 10px; top: 10px; background-color: white; }
         </style>
     </head>
     <body>
+
+        <div id="magnifier">
+            <img src="http://placehold.it/320x180">
+        </div>
 
         <div class="left">
             <p>Browse Twitch VODs of recent fangame streams</p>
@@ -57,13 +64,13 @@ table { border-spacing: 0; }
                     {{if $c.HasVod}}
                         <div class="thumb">
                             <a href="{{$c.VodUrl}}" target="_blank">
-                                <img src="{{$c.ImageUrl}}">
+                                <img src="{{$c.ImageUrl}}" onmousemove="magnify(this, true)" onmouseout="unmagnify()">
                             </a>
                             <div class="backing"/>
                         </div>
                     {{else}}
                         <div class="thumb thumb-novod">
-                            <img src="{{$c.ImageUrl}}">
+                            <img src="{{$c.ImageUrl}}" onmousemove="magnify(this, false)" onmouseout="unmagnify()">
                             <div class="backing"/>
                         </div>
                     {{end}}
