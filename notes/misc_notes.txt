@@ -6,6 +6,10 @@ Don't make example files like example_config.toml, because you will eventually
 forget to update it when code changes, then it's actively unhelpful.
 
 
+That one crash index out of range line 119 in the valid function in webpage:
+Add log for when columnOfTime returns out of bounds, same for timeOfColumn.
+
+
 // DeleteLeftoverImages deletes images whose thumbs are no longer in the DB.
 func DeleteLeftoverImages() int {
     rows, err := db.Query("SELECT imagePath FROM thumbs")

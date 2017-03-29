@@ -92,7 +92,7 @@ func BuildWebpage (roundTime time.Time) {
         thumbs := database.ChannelThumbsTimeAscending(channelName)
         for i, thumb := range thumbs {
             // TODO: fix timezone offset
-            t := thumb.CreatedTime.Add(time.Duration(5) * time.Hour)
+            t := thumb.CreatedTime.Add(time.Duration(4) * time.Hour)
             curpos := columnOfTime(t, roundTime)
             // Detect gap and start new stream
             if curpos - lastpos > 1 || i == 0 {

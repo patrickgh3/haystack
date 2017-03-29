@@ -25,6 +25,7 @@ table { border-spacing: 0; }
             .thumb img:hover { opacity: .7; }
             .thumb-novod img:hover { opacity: .5; }
             .thumb img { width: 100%; height: auto; display: block; }
+            .thumb .backing { position: absolute; width: 140px; left: 10px; top: 10px; background-color: white; }
         </style>
     </head>
     <body>
@@ -58,10 +59,12 @@ table { border-spacing: 0; }
                             <a href="{{$c.VodUrl}}" target="_blank">
                                 <img src="{{$c.ImageUrl}}">
                             </a>
+                            <div class="backing"/>
                         </div>
                     {{else}}
                         <div class="thumb thumb-novod">
                             <img src="{{$c.ImageUrl}}">
+                            <div class="backing"/>
                         </div>
                     {{end}}
                 {{else if eq $c.Type 1}}
