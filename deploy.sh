@@ -1,5 +1,4 @@
 #!/bin/bash
-cp ~/haystack-test/haystack /home/deploy/haystack/haystack
-cp -r ~/haystack-test/templates /home/deploy/haystack
-cp -r ~/haystack-test/assets/* /var/html/cwpat.me/haystack
-
+cp $GOPATH/bin/haystack /home/deploy/haystack/haystack
+cp -r $GOPATH/src/github.com/patrickgh3/haystack/templates /home/deploy/haystack
+sudo cp -r $GOPATH/src/github.com/patrickgh3/haystack/assets/* /var/html/cwpat.me/haystack

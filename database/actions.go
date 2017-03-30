@@ -9,14 +9,18 @@ import (
 
 // InsertThumb adds a specified entry to the thumbs table.
 func InsertThumb (channelName string, created time.Time,
-        vodID string, imagePath string, vodTime time.Time) {
+        vodID string, imagePath string, vodTime time.Time, status string) {
 
     timeString := created.Format(mysqlTimestampFormat)
     vodTimeString := vodTime.Format(mysqlTimeFormat)
+    // todo: this should be in sql settings?
+    if len(status) > 35 {
+        status = status[:35]
+    }
     _, err := db.Exec(
-            "INSERT INTO thumbs (created, channel, VOD, imagePath, VODtime)"+
-            "VALUES (?, ?, ?, ?, ?)",
-            timeString, channelName, vodID, imagePath, vodTimeString,
+            "INSERT INTO thumbs (created, channel, VOD, imagePath, VODtime, status)"+
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            timeString, channelName, vodID, imagePath, vodTimeString, status,
     )
     if err != nil {
         panic(err)
@@ -67,8 +71,12 @@ func ChannelThumbsTimeAscending (channel string) []ThumbRow {
     }
     defer rows.Close()
     for rows.Next() {
-        r := CurrRowStruct(rows)
-        thumbs = append(thumbs, *r)
+        r, err := CurrRowStruct(rows)
+        if err != nil {
+            fmt.Printf("ChannelThumbsTimeAscending CurrRowStruct channel=%v errored", channel)
+        } else {
+            thumbs = append(thumbs, *r)
+        }
     }
 
     return thumbs
@@ -88,12 +96,17 @@ func DeleteOldThumbs(roundTime time.Time) int {
     }
     defer rows.Close()
     for rows.Next() {
-        r := CurrRowStruct(rows)
-        filepath := config.Path.Root + r.Image
-        err = os.Remove(filepath)
+        r, err := CurrRowStruct(rows)
         if err != nil {
-            fmt.Println("Error removing old thumb image file")
-            fmt.Println(err)
+            panic(err)
+            fmt.Printf("DeleteOldThumbs CurrRowStruct errored")
+        } else {
+            filepath := config.Path.Root + r.Image
+            err = os.Remove(filepath)
+            if err != nil {
+                fmt.Println("Error removing old thumb image file")
+                fmt.Println(err)
+            }
         }
     }
 

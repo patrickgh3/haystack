@@ -52,6 +52,8 @@ func Update () {
         imagePath := config.Path.ImagesRelative + "/" +
                 stream.Channel.Name + "_" + unixTimeString + ".jpg"
         channelName := stream.Channel.Display_name
+        status := stream.Channel.Status
+        fmt.Printf("status: %v\n", status)
 
         archive := twitchapi.ChannelRecentArchive(stream.Channel.Id)
         var vodID string
@@ -70,7 +72,8 @@ func Update () {
 
         DownloadImage(imageUrl, imageDLPath)
 
-        database.InsertThumb(channelName, roundTime, vodID, imagePath, vodTime)
+        database.InsertThumb(
+            channelName, roundTime, vodID, imagePath, vodTime, status)
     }
 
     numDeleted := database.DeleteOldThumbs(roundTime)

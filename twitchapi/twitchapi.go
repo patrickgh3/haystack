@@ -29,6 +29,7 @@ type Channel struct {
     Id string
     Display_name string
     Name string
+    Status string
 }
 
 type Preview struct {

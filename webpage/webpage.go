@@ -31,6 +31,7 @@ type Cell struct {
     Type int
 
     ChannelName string
+    Title string
 
     HasVod bool
     ImageUrl string
@@ -40,6 +41,7 @@ type Cell struct {
 type Stream struct {
     StartPos int
     ChannelName string
+    Title string
     Thumbs []database.ThumbRow
 }
 
@@ -66,6 +68,14 @@ func timeOfColumn (col int, roundTime time.Time) time.Time {
     columnsFromRight := (config.Timing.NumPeriods - 1) - (col - 1)
     deltaT := config.Timing.Period * time.Duration(-columnsFromRight)
     return roundTime.Add(deltaT)
+}
+
+func truncateString (s string) string {
+    maxLength := 24
+    if len(s) > maxLength {
+        s = s[:maxLength-3] + "..."
+    }
+    return s
 }
 
 // BuildWebpage generates an HTML page with up-to-date thumbnail content.
@@ -100,7 +110,8 @@ func BuildWebpage (roundTime time.Time) {
                 if i != 0 {
                     streams = append(streams, curStream)
                 }
-                curStream = Stream{ChannelName:channelName}
+                title := truncateString(thumb.Status)
+                curStream = Stream{ChannelName:channelName, Title:title}
                 curStream.StartPos = curpos
             }
             // Always append thumb to current stream
@@ -141,6 +152,7 @@ func BuildWebpage (roundTime time.Time) {
         cell.Filled = true
         cell.Type = 1
         cell.ChannelName = stream.ChannelName
+        cell.Title = stream.Title
         for d, thumb := range stream.Thumbs {
             cell := pd.Cells[r][stream.StartPos+d]
             cell.Filled = true

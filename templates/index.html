@@ -20,14 +20,16 @@ body {
     .left p { margin: 5em 1em; font-size: 1.5em; }
 .right { position: absolute; left: 300px; display: inline-block; }
 table { border-spacing: 0; }
-    td { min-width: 30px; max-width: 30px; width: 30px; min-height: 50px; max-height: 50px; height: 50px; }
-    .timelabel { height: 50px; font-size: 1.5em; white-space: nowrap; font-weight: bold; direction: rtl; text-align: right; }
-        td .channelname { height: 100%; vertical-align: top; text-align: right; direction: rtl; padding-right: 0.3em; font-size: 1.5em; font-weight: bold; }
+    tr { max-height: 40px; }
+    td { min-width: 20px; max-width: 20px; width: 20px; min-height: 40px; max-height: 40px; height: 40px; }
+    .timelabel { height: 50px; font-size: 1.5em; white-space: nowrap; direction: rtl; text-align: right; }
+        td .channelname { height: 100%; vertical-align: top; text-align: right; white-space: nowrap; padding-right: 0.3em; font-size: 1em; }
+            td .channelname .inner { float: right; }
         td .thumb { background-color: white; position: relative; overflow: hidden; }
         td .thumb-novod { background-color: red; }
             .thumb img:hover { opacity: .7; }
             .thumb-novod img:hover { opacity: .7; }
-            .thumb img { width: auto; height: 50px; display: block; margin-left: -30px; }
+            .thumb img { width: auto; height: 40px; display: block; margin-left: -40px; }
             .thumb .backing { position: absolute; width: 140px; left: 10px; top: 10px; background-color: white; }
         </style>
     </head>
@@ -76,7 +78,9 @@ table { border-spacing: 0; }
                     {{end}}
                 {{else if eq $c.Type 1}}
                     <td>
-                        <div class="channelname">{{$c.ChannelName}}</div>
+                        <div class="channelname">
+                            <div class="inner">{{$c.ChannelName}}<br>{{$c.Title}}</div>
+                        </div>
                     </td>
                 {{end}}
                     </td>

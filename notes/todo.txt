@@ -7,4 +7,5 @@ Place streams puzzle-pieced close together instead of unique channel y positions
 Include channel name in the spot to the left of each stream
 Don't have possible time labels above a column toward the very left where there can never be a thumb
 Allow 1-2 thumb gaps but still considered same stream if random requests fail
+Handle error in CurrRowStruct function where trying to parse date string "" (bad data in DB somehow)
 

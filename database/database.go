@@ -22,6 +22,7 @@ type ThumbRow struct {
     VODTime string
     CreatedTime time.Time
     VODTimeTime time.Time
+    Status string
 }
 
 // InitDB initializes the database.
@@ -45,9 +46,9 @@ func InitDB () {
     }
 }
 
-func CurrRowStruct(rows *sql.Rows) *ThumbRow {
+func CurrRowStruct(rows *sql.Rows) (*ThumbRow, error) {
     r := new(ThumbRow)
-    rows.Scan(&r.Id, &r.Created, &r.Channel, &r.VOD, &r.Image, &r.VODTime)
+    rows.Scan(&r.Id, &r.Created, &r.Channel, &r.VOD, &r.Image, &r.VODTime, &r.Status)
 
     t, err := time.Parse(mysqlTimestampFormat, r.Created)
     if err != nil {
@@ -57,10 +58,10 @@ func CurrRowStruct(rows *sql.Rows) *ThumbRow {
 
     t, err = time.Parse(mysqlTimeFormat, r.VODTime)
     if err != nil {
-        panic(err)
+        return nil, err
     }
     r.VODTimeTime = t
 
-    return r
+    return r, nil
 }
 
