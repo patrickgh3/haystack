@@ -123,7 +123,8 @@ func BuildWebpage (roundTime time.Time) {
                 if i != 0 {
                     streams = append(streams, curStream)
                 }
-                title := truncateString(thumb.Status)
+                //title := truncateString(thumb.Status)
+                title := thumb.Status
                 curStream = Stream{ChannelName:channelName, Title:title}
                 curStream.StartPos = curpos
             }
