@@ -3,6 +3,7 @@ Make the code a joy to work on.
 New UI
 Median(?) number of viewers of stream
 Multiple channel group pages (fangames, Patrick, Klazen)
+Display multiple titles (if 3 or less)
 
 Error handing (!)
 Logging (!)

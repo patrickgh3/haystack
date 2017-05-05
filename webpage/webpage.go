@@ -11,7 +11,7 @@ import (
     "github.com/patrickgh3/haystack/database"
 )
 
-const indexFilepath = "templates/index.html"
+const indexFilepath = "templates/newindex.html"
 const vodUrlTimeFormat = "15h04m05s"
 const vodBaseUrl = "https://www.twitch.tv/videos/"
 const labelTimeFormat = "Monday 2006-01-02"
@@ -43,6 +43,17 @@ type Stream struct {
     ChannelName string
     Title string
     Thumbs []database.ThumbRow
+}
+
+type NewWebpageData struct {
+    StreamPanels []StreamPanel
+}
+
+type StreamPanel struct {
+    ChannelDisplayName string
+    ChannelName string
+    CoverImages []string
+    Title string
 }
 
 // ByStart implements sort.Interface for []Stream
@@ -80,7 +91,7 @@ func truncateString (s string) string {
 
 // BuildWebpage generates an HTML page with up-to-date thumbnail content.
 func BuildWebpage (roundTime time.Time) {
-    var pd WebpageData
+    /*var pd WebpageData
     pd.BuildTimeStr = time.Now().Format(time.RFC850)
 
     for i := 0; i < config.Timing.NumPeriods; i++ {
@@ -90,10 +101,12 @@ func BuildWebpage (roundTime time.Time) {
             label = t.Format(labelTimeFormat)
         }
         pd.TimeLabels = append(pd.TimeLabels, label)
-    }
+    }*/
 
     channelNames := database.DistinctChannels()
-    pd.NumChannels = len(channelNames)
+    //pd.NumChannels = len(channelNames)
+
+    var wpd NewWebpageData
 
     // Create list of streams from the database
     var streams []Stream
@@ -123,7 +136,7 @@ func BuildWebpage (roundTime time.Time) {
     sort.Sort(ByStart(streams))
 
     // Insert streams into cells
-    for _, stream := range streams {
+    /*for _, stream := range streams {
         // Find or make a row r that we can insert this stream into
         spaceLeft := 6
         valid := func(row int, pos int) bool {
@@ -164,6 +177,18 @@ func BuildWebpage (roundTime time.Time) {
             cell.VodUrl = vodBaseUrl + thumb.VOD +
                     "?t=" + vodTimeString
         }
+    }*/
+
+    for _, stream := range streams {
+        panel := StreamPanel{ChannelDisplayName:stream.ChannelName,
+                            Title:stream.Title}
+        numCoverImages := 4
+        numThumbs := len(stream.Thumbs)
+        for i := 0; i < numCoverImages; i++ {
+            t := int(float64(i)/float64(numCoverImages-1) * float64(numThumbs-1))
+            panel.CoverImages = append(panel.CoverImages, config.Path.SiteUrl+stream.Thumbs[t].Image)
+        }
+        wpd.StreamPanels = append(wpd.StreamPanels, panel)
     }
 
     // Write to html file
@@ -174,7 +199,7 @@ func BuildWebpage (roundTime time.Time) {
     }
 
     w := bufio.NewWriter(f)
-    templ.Execute(w, pd)
+    templ.Execute(w, wpd)
     w.Flush()
 }
 
