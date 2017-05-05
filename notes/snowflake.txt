@@ -1,0 +1,55 @@
+http://katafrakt.me/2017/04/29/snowflake-method-for-software-projects/
+
+One sentence summary
+A website for catching up on livestreams you missed each week.
+
+Motivation
+I occasionally find myself scanning archives of IWBTG fangame livestreams from
+a day or two earlier, looking for newly released games, speedrun times, and
+occasional playthroughs of my own games that I missed live. It would be nice if
+I could speed up this process, and be sure to not accidentally miss any streams.
+I imagine that if I used this app every day, then others also might find it
+useful.
+I also want to learn Go, because it's used at Twitch, where I'd like to work,
+and to broaden my skills a little. This project would also look nice on my
+resume.
+
+Main features
+- Browse thumbnails of recent streams
+- Click to jump to the Twitch video archive at that time
+- Most recent streams appear first, and can scroll to previous days
+- Ability to scan quickly (20s) for overview, or spend a few minutes and go deep
+- Support for multiple channel groups with their own pages
+
+Personas
+Chuck is ~25 years old and works very hard as a software engineer. He used to
+have more time and energy after work, but nowadays he's often exhausted by
+the evening and doesn't have as much time and energy to joke around in Twitch
+chats and chat in Discord servers, let alone search for and watch past
+broadcasts of new fangame releases or special streamer events. Chuck does
+sometimes lurk in streams during the day when there's a lull in the work.
+Chuck might look for popular new fangame releases, and thumb through every
+stream of a few select channels he especially likes.
+
+Patrick is 22 years old and is a full-time computer science student. He
+frequently watches a variety of channels on Twitch at various hours during
+the day, depending on class schedule and activities with friends. The time
+he spends on Twitch oscillates every few weeks due to business with school;
+some weeks he barely watches at all, and doesn't care to catch up. Patrick
+might look for people playing one of his games, and any fangames he hasn't seen
+before / every new release.
+
+User Stories
+Klazen is chilling in the evening, chatting on Discord and watching a stream,
+and gets a little interested if anything intresting happened on Twitch in the
+last couple days since he hasn't watched much. He opens the site in a new tab,
+looks at a few mundane streams, then notices Stonk did a triple-K3 any% stream!
+Excited, he wants to listen to Stonk's reactions after finishing each run, and
+check out the run times and chat reactions.
+
+Patrick hasn't watched Twitch much this week and is curious what the new
+fangames of the week look like. He opens up the site and searches for specific
+streamers like Para, Geezer, and Sunbla, and if their stream titles say they're
+playing new releases. He then wants fine granularity and high resolution images
+to check out the games, and also watch a few minutes of the Twitch VOD of
+particularly interesting ones.
