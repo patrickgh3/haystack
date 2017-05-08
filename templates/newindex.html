@@ -24,10 +24,9 @@ body { background-color:#111; color:#ddd; letter-spacing:0.02em;
             .coverimages img { display:inline-block; width:50%; float:left; }
     #scrubber { background-color:#333; visibility:hidden; position:absolute;
                 z-index:1; width:90%; height:100px; margin-top:22px;
-                outline:2px solid white; }
-    #scrubberclose { position: absolute; visibility: hidden; z-index:1;
-                     background-color:red; color:white; width:50px;
-                     height:50px; }
+                outline:2px solid white; display:flex; }
+        #scrubber img { display:inline; width: 20px; height:100%;
+                        width:auto; overflow:hidden; }
 .deselected { outline:1px solid gray; } 
 .selected { outline:2px solid white; } 
         </style>
@@ -41,7 +40,11 @@ body { background-color:#111; color:#ddd; letter-spacing:0.02em;
         </div>
         <div id="content">
             <div id="scrubber">
-                <!--<div id="scrubberclose" onClick="hideScrubber()">X</div>-->
+                <img src="https://cwpat.me/haystack-dev/assets/images/novod.png">
+                <img src="https://cwpat.me/haystack-dev/assets/images/novod.png">
+                <img src="https://cwpat.me/haystack-dev/assets/images/novod.png">
+                <img src="https://cwpat.me/haystack-dev/assets/images/novod.png">
+                <img src="https://cwpat.me/haystack-dev/assets/images/novod.png">
             </div>
 {{range .StreamPanels}}
             <div class="streampanel deselected" onClick="selectPanel(this)">

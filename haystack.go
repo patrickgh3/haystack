@@ -8,6 +8,7 @@ import (
     "github.com/patrickgh3/haystack/database"
     "github.com/patrickgh3/haystack/twitchapi"
     "github.com/patrickgh3/haystack/webpage"
+    "github.com/patrickgh3/haystack/webserver"
 )
 
 // main initializes stuff, then calls Update periodically.
@@ -15,6 +16,10 @@ func main () {
     config.ReadConfig()
     database.InitDB()
     webpage.InitTemplate()
+
+    // TEMP: Start web server to handle HTTP requets
+    // TODO: spawn as separate goroutine
+    webserver.Serve()
 
     // Initial page rebuild
     now := time.Now()

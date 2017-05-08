@@ -1,0 +1,9 @@
+location /haystack-dev/ {
+    try_files $uri $uri/ @haystack-dev;
+}
+location @haystack-dev {
+    fastcgi_pass    127.0.0.1:4424;
+    include fastcgi_params;
+    fastcgi_intercept_errors on;
+    error_page 404 /haystack-dev/404.html;
+}
