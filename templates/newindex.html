@@ -25,13 +25,17 @@ body { background-color:#111; color:#ddd; letter-spacing:0.02em;
     #scrubber { background-color:#333; visibility:hidden; position:absolute;
                 z-index:1; width:90%; height:100px; margin-top:22px;
                 outline:2px solid white; display:flex; }
-        #scrubber img { display:inline; width: 20px; height:100%;
-                        width:auto; overflow:hidden; }
+        #scrubber a { display:inline-block; overflow:hidden; object-fit:cover; }
+        #scrubber img { height:100%; width:auto; }
+    #magnifier { position:absolute; visibility:hidden; z-index:1;
+                 background-size:contain; border: 3px solid white; }
+        #magnifier img { display: block; width: 320px; height: auto; }
 .deselected { outline:1px solid gray; } 
 .selected { outline:2px solid white; } 
         </style>
+        <script type="text/javascript" src="js/scrubber.js"></script>
+        <script type="text/javascript" src="js/magnify.js"></script>
     </head>
-    <script type="text/javascript" src="js/scrubber.js"></script>
     <body>
         <div id="header">
             <h1>Haystack</h1>
@@ -39,15 +43,11 @@ body { background-color:#111; color:#ddd; letter-spacing:0.02em;
             <noscript>This page requires Javascript to be enabled for full functionality.</noscript>
         </div>
         <div id="content">
-            <div id="scrubber">
-                <img src="https://cwpat.me/haystack-dev/assets/images/novod.png">
-                <img src="https://cwpat.me/haystack-dev/assets/images/novod.png">
-                <img src="https://cwpat.me/haystack-dev/assets/images/novod.png">
-                <img src="https://cwpat.me/haystack-dev/assets/images/novod.png">
-                <img src="https://cwpat.me/haystack-dev/assets/images/novod.png">
-            </div>
+            <div id="scrubber"></div>
+            <div id="magnifier"><img></div>
 {{range .StreamPanels}}
-            <div class="streampanel deselected" onClick="selectPanel(this)">
+            <div class="streampanel deselected" onClick="selectPanel(this)"
+            data-clicked="" data-streamid="{{.StreamID}}" data-scrubberhtml="">
                 <div class="streampanelhighlight"></div>
                 <h3>{{.ChannelDisplayName}}</h3>
                 <h3>{{.Title}}</h3>

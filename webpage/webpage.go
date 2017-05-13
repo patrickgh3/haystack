@@ -5,7 +5,6 @@ import (
     "os"
     "bufio"
     "time"
-    "sort"
     "github.com/kardianos/osext"
     "github.com/patrickgh3/haystack/config"
     "github.com/patrickgh3/haystack/database"
@@ -50,6 +49,7 @@ type NewWebpageData struct {
 }
 
 type StreamPanel struct {
+    StreamID int
     ChannelDisplayName string
     ChannelName string
     CoverImages []string
@@ -91,22 +91,8 @@ func truncateString (s string) string {
 
 // BuildWebpage generates an HTML page with up-to-date thumbnail content.
 func BuildWebpage (roundTime time.Time) {
-    /*var pd WebpageData
-    pd.BuildTimeStr = time.Now().Format(time.RFC850)
-
-    for i := 0; i < config.Timing.NumPeriods; i++ {
-        label := ""
-        t := timeOfColumn(i, roundTime)
-        if t.Truncate(config.Timing.LabelPeriod) == t {
-            label = t.Format(labelTimeFormat)
-        }
-        pd.TimeLabels = append(pd.TimeLabels, label)
-    }*/
-
-    channelNames := database.DistinctChannels()
-    //pd.NumChannels = len(channelNames)
-
     var wpd NewWebpageData
+    /*channelNames := database.DistinctChannels()
 
     // Create list of streams from the database
     var streams []Stream
@@ -134,55 +120,12 @@ func BuildWebpage (roundTime time.Time) {
         }
         streams = append(streams, curStream)
     }
+
     sort.Sort(ByStart(streams))
-
-    // Insert streams into cells
-    /*for _, stream := range streams {
-        // Find or make a row r that we can insert this stream into
-        spaceLeft := 6
-        valid := func(row int, pos int) bool {
-            for i := 0; i <= spaceLeft; i++ {
-                if pos-i < 0 || pd.Cells[row][pos-i].Filled {
-                    return false
-                }
-            }
-            return true
-        }
-        var r int
-        for r = 0; r < len(pd.Cells); r++ {
-            if valid(r, stream.StartPos) {
-                break
-            }
-        }
-        if r == len(pd.Cells) {
-            pd.Cells = append(pd.Cells, make([]*Cell, config.Timing.NumPeriods+1))
-            for i := 0; i < config.Timing.NumPeriods+1; i++ {
-                pd.Cells[len(pd.Cells)-1][i] = &Cell{};
-            }
-        }
-
-        // Insert the stream into row r
-        cell := pd.Cells[r][stream.StartPos-1]
-        cell.Filled = true
-        cell.Type = 1
-        cell.ChannelName = stream.ChannelName
-        cell.Title = stream.Title
-        for d, thumb := range stream.Thumbs {
-            cell := pd.Cells[r][stream.StartPos+d]
-            cell.Filled = true
-            cell.Type = 0
-            cell.HasVod = thumb.VOD != ""
-            //cell.HasVod = false
-            cell.ImageUrl = config.Path.SiteUrl + thumb.Image
-            vodTimeString := thumb.VODTimeTime.Format(vodUrlTimeFormat)
-            cell.VodUrl = vodBaseUrl + thumb.VOD +
-                    "?t=" + vodTimeString
-        }
-    }*/
 
     for _, stream := range streams {
         panel := StreamPanel{ChannelDisplayName:stream.ChannelName,
-                            Title:stream.Title}
+                            Title:stream.Title, StreamID:4}
         numCoverImages := 4
         numThumbs := len(stream.Thumbs)
         for i := 0; i < numCoverImages; i++ {
@@ -190,7 +133,17 @@ func BuildWebpage (roundTime time.Time) {
             panel.CoverImages = append(panel.CoverImages, config.Path.SiteUrl+stream.Thumbs[t].Image)
         }
         wpd.StreamPanels = append(wpd.StreamPanels, panel)
+    }*/
+
+    for x := 0; x < 5; x++ {
+        panel := StreamPanel{ChannelDisplayName:"name", Title:"title", StreamID:x}
+        numCoverImages := 4
+        for i := 0; i < numCoverImages; i++ {
+            panel.CoverImages = append(panel.CoverImages, config.Path.SiteUrl+"/images/test.jpg")
+        }
+        wpd.StreamPanels = append(wpd.StreamPanels, panel)
     }
+
 
     // Write to html file
     f, err := os.Create(config.Path.Root + "/index.html")

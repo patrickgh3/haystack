@@ -6,6 +6,7 @@ import (
     "fmt"
     "github.com/patrickgh3/haystack/config"
     "github.com/patrickgh3/haystack/database"
+    "github.com/patrickgh3/haystack/newdatabase"
     "github.com/patrickgh3/haystack/twitchapi"
     "github.com/patrickgh3/haystack/webpage"
     "github.com/patrickgh3/haystack/webserver"
@@ -13,19 +14,25 @@ import (
 
 // main initializes stuff, then calls Update periodically.
 func main () {
+
     config.ReadConfig()
+
+    // TEMP
+    newdatabase.TestDB()
+    //return
+
     database.InitDB()
     webpage.InitTemplate()
-
-    // TEMP: Start web server to handle HTTP requets
-    // TODO: spawn as separate goroutine
-    webserver.Serve()
 
     // Initial page rebuild
     now := time.Now()
     roundTime := now.Round(config.Timing.Period)
-    database.DeleteOldThumbs(roundTime)
+    //database.DeleteOldThumbs(roundTime)
     webpage.BuildWebpage(roundTime)
+
+    // TEMP: Start web server to handle HTTP requets
+    // TODO: spawn as separate goroutine
+    webserver.Serve()
 
     // Sleep until the next multiple of refresh period
     wakeup := roundTime.Add(config.Timing.Period)
