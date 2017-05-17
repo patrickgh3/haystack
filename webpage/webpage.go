@@ -5,17 +5,23 @@ import (
     "os"
     "bufio"
     "time"
+    "sort"
     "github.com/kardianos/osext"
     "github.com/patrickgh3/haystack/config"
     "github.com/patrickgh3/haystack/database"
 )
 
 const indexFilepath = "templates/newindex.html"
-const labelTimeFormat = "Monday 2006-01-02"
+const groupTimeFormat = "Monday 2006-01-02"
 
 var templ *template.Template
 
 type WebpageData struct {
+    PanelGroups []PanelGroup
+}
+
+type PanelGroup struct {
+    Title string
     StreamPanels []StreamPanel
 }
 
@@ -32,6 +38,12 @@ type StreamPanel struct {
 func (b ByStart) Len() int { return len(b) }
 func (b ByStart) Swap(i, j int) { b[i], b[j] = b[j], b[i] }
 func (b ByStart) Less(i, j int) bool { return b[i].StartPos < b[j].StartPos }*/
+
+// Times implements sort.Interface
+type Times []time.Time
+func (t Times) Len() int { return len(t) }
+func (t Times) Swap(i, j int) { t[i], t[j] = t[j], t[i] }
+func (t Times) Less(i, j int) bool { return t[i].Before(t[j]) }
 
 func InitTemplate () {
     ef, err := osext.ExecutableFolder()
@@ -54,27 +66,53 @@ func BuildWebpage (roundTime time.Time) {
     var wpd WebpageData
     // For each stream in the DB, create a panel
     streams := database.GetAllStreams()
-    // TODO: sort streams first by day, then by currently live, then by viewers
-    for _, stream := range streams {
-        panel := StreamPanel{ChannelDisplayName:stream.ChannelDisplayName,
-                Title:"todo: title", StreamID:stream.ID}
 
-        // Grab 4 representative images from the stream for its panel
-        // [----|--------|--------|--------|----] where | are chosen images
-        thumbs := database.GetStreamThumbs(stream.ID)
-        numCoverImages := 4
-        for i := 0; i < numCoverImages; i++ {
-            // For each i, calculate fraction it is through the stream
-            fractionThroughStream := (float64(i)+0.5)/float64(numCoverImages)
-            // The closest thumb index that fraction corresponds to
-            chosenThumbIndex := int(
-                    fractionThroughStream * float64(len(thumbs)-1))
-            // Add image url of that thumb to the list
-            imageUrl := config.Path.SiteUrl +
-                    thumbs[chosenThumbIndex].ImagePath
-            panel.CoverImages = append(panel.CoverImages, imageUrl)
+    // TODO: sort streams first by day, then by currently live, then by viewers
+
+    // Group streams by day
+    streamgroups := make(map[time.Time][]database.Stream)
+    for _, stream := range streams {
+        t := stream.StartTime
+        rounded := time.Date(
+                t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+        streamgroups[rounded] = append(streamgroups[rounded],
+                stream)
+    }
+
+    // Sort time groups by most recent
+    var groupTimes Times
+    for k, _ := range streamgroups { groupTimes = append(groupTimes, k) }
+    sort.Sort(sort.Reverse(groupTimes))
+
+    for _, groupTime := range groupTimes {
+        streams := streamgroups[groupTime]
+        // TODO: further sort streams in group by currently live, then viewers
+
+        panelgroup := PanelGroup{Title:groupTime.Format(groupTimeFormat)}
+
+        for _, stream := range streams {
+            panel := StreamPanel{ChannelDisplayName:stream.ChannelDisplayName,
+                    Title:stream.Title, StreamID:stream.ID}
+
+            // Grab 4 representative images from the stream for its panel
+            // [----|--------|--------|--------|----] where | are chosen images
+            thumbs := database.GetStreamThumbs(stream.ID)
+            numCoverImages := 4
+            for i := 0; i < numCoverImages; i++ {
+                // For each i, calculate fraction it is through the stream
+                fractionThroughStream :=
+                        (float64(i) + 0.5) / float64(numCoverImages)
+                // The closest thumb index that fraction corresponds to
+                chosenThumbIndex := int(
+                        fractionThroughStream * float64(len(thumbs)-1))
+                // Add image url of that thumb to the list
+                imageUrl := config.Path.SiteUrl +
+                        thumbs[chosenThumbIndex].ImagePath
+                panel.CoverImages = append(panel.CoverImages, imageUrl)
+            }
+            panelgroup.StreamPanels = append(panelgroup.StreamPanels, panel)
         }
-        wpd.StreamPanels = append(wpd.StreamPanels, panel)
+        wpd.PanelGroups = append(wpd.PanelGroups, panelgroup)
     }
 
     // Write to html file

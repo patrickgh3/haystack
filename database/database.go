@@ -4,6 +4,7 @@ import (
     "github.com/jinzhu/gorm"
     _ "github.com/jinzhu/gorm/dialects/mysql"
     "fmt"
+    "time"
     "github.com/patrickgh3/haystack/config"
 )
 
@@ -12,10 +13,8 @@ type Stream struct {
     ChannelName         string  `gorm:"size:50"`
     ChannelDisplayName  string  `gorm:"size:50"`
     VOD                 string  `gorm:"size:50"`
-    //StartTime           time.Time
-
-    //Title               string  `gorm:"size:150"`
-    //EndTime             time.Time
+    StartTime           time.Time
+    Title               string  `gorm:"size:150"`
 }
 
 type Thumb struct {
@@ -24,7 +23,6 @@ type Thumb struct {
     VODSeconds  int
     ImagePath   string
     VOD string `gorm:"-"`
-    //Viewers     int
 }
 
 var db *gorm.DB
@@ -44,20 +42,21 @@ func InitDB() {
 }
 
 func AddThumbToDB(ChannelName string, ChannelDisplayName string,
-        VODSeconds int, VOD string, ImagePath string) {
+        VODSeconds int, VOD string, ImagePath string, StartTime time.Time,
+        Title string) {
     // Find existing 
     var s []Stream
     db.Where("VOD = ?", VOD).Find(&s)
     var streamid uint
     if len(s) == 0 {
-        fmt.Printf("adding stream\n")
+        //fmt.Printf("adding stream\n")
         newstream := Stream{
                 ChannelName:ChannelName, ChannelDisplayName:ChannelDisplayName,
-                VOD:VOD}
+                VOD:VOD, StartTime:StartTime, Title:Title}
         db.Save(&newstream)
         streamid = newstream.ID
     } else {
-        fmt.Printf("not adding stream\n")
+        //fmt.Printf("not adding stream\n")
         streamid = s[0].ID
     }
 

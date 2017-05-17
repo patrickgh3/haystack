@@ -69,14 +69,17 @@ func Update () {
         // Query Twitch for the channel's most recent (current) archive video ID
         archive := twitchapi.ChannelRecentArchive(stream.Channel.Id)
         var vodID string
-        var vodOffset time.Duration
+        var vodSeconds int
+        var vodTime time.Time
         if archive == nil {
             fmt.Println("WARN: archive was nil")
-            vodID = ""
-            vodOffset = time.Duration(0)
+            /*vodID = ""
+            vodSeconds = 0*/
+            continue
         } else {
             vodID = archive.Id
-            vodOffset = roundTime.Sub(archive.Created_At_Time)
+            vodSeconds = int(roundTime.Sub(archive.Created_At_Time).Seconds())
+            vodTime = archive.Created_At_Time
         }
 
         imagePath := config.Path.ImagesRelative + "/" +
@@ -94,10 +97,9 @@ func Update () {
         // Want: DB Stream{ChannelName, ChannelDisplayName, Title}
         //       DB Thumb{StreamID, VODSeconds, VOD, ImagePath, Viewers}
 
-        vodSeconds := int(vodOffset.Seconds())
         database.AddThumbToDB(
                 stream.Channel.Name, stream.Channel.Display_name,
-                vodSeconds, vodID, imagePath)
+                vodSeconds, vodID, imagePath, vodTime, stream.Channel.Status)
 
         //database.InsertThumb(
         //    channelName, roundTime, vodID, imagePath, vodTime, status)
@@ -110,6 +112,7 @@ func Update () {
     // Regenerate the main webpage
     webpage.BuildWebpage(roundTime)
 
+    fmt.Printf("update finish\n")
     /*fmt.Printf("%v deleted\n", numDeleted)
     fmt.Printf("%v thumbs \n", database.NumThumbs())
     fmt.Printf("%v jpg files\n", NumFilesInDir(config.Path.Images))

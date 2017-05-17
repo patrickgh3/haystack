@@ -36,7 +36,6 @@ type ConfDB struct {
 
 type ConfTiming struct {
     PeriodSeconds int `yaml:"period-seconds"`
-    LabelSeconds int `yaml:"label-seconds"`
     NumPeriods int `yaml:"num-periods"`
     Period time.Duration
     LabelPeriod time.Duration
@@ -71,7 +70,6 @@ func ReadConfig() {
 
     // Additional calculation
     Timing.Period = time.Duration(Timing.PeriodSeconds) * time.Second
-    Timing.LabelPeriod = time.Duration(Timing.LabelSeconds) * time.Second
     Path.Images = Path.Root + Path.ImagesRelative
 }
 
