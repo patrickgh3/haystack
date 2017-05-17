@@ -24,14 +24,16 @@ body { background-color:#111; color:#ddd; letter-spacing:0.02em;
             .coverimages img { display:inline-block; width:50%; float:left; }
     #scrubber { background-color:#333; visibility:hidden; position:absolute;
                 z-index:1; width:90%; height:100px; margin-top:22px;
-                outline:2px solid white; display:flex; }
-        #scrubber a { display:inline-block; overflow:hidden; object-fit:cover; }
+                outline:3px solid white; display:flex; }
+        #scrubber a { display:inline-block; overflow:hidden; object-fit:cover;
+                      background-color:white; }
         #scrubber img { height:100%; width:auto; }
+        #scrubber img:hover { opacity: .7; }
     #magnifier { position:absolute; visibility:hidden; z-index:1;
                  background-size:contain; border: 3px solid white; }
-        #magnifier img { display: block; width: 320px; height: auto; }
-.deselected { outline:1px solid gray; } 
-.selected { outline:2px solid white; } 
+        #magnifier img { display: block; width:480px; height: 270px; }
+.deselected { outline:none; } 
+.selected { outline:3px solid white; } 
         </style>
         <script type="text/javascript" src="js/scrubber.js"></script>
         <script type="text/javascript" src="js/magnify.js"></script>
@@ -40,7 +42,9 @@ body { background-color:#111; color:#ddd; letter-spacing:0.02em;
         <div id="header">
             <h1>Haystack</h1>
             <h2>Catch up on livestreams you missed</h2>
-            <noscript>This page requires Javascript to be enabled for full functionality.</noscript>
+            <noscript>
+                This page requires Javascript to be enabled for full functionality.
+            </noscript>
         </div>
         <div id="content">
             <div id="scrubber"></div>

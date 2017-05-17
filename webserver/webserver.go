@@ -9,7 +9,9 @@ import (
     "path"
     "html/template"
     "strconv"
+    "time"
     "github.com/patrickgh3/haystack/config"
+    "github.com/patrickgh3/haystack/database"
 )
 
 var streamTemplate = template.Must(template.New("streamTemplate").Parse(
@@ -60,24 +62,25 @@ func (s FastCGIServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     // Handle the various application requests
     vals := r.URL.Query()
     if r.URL.Path == "/stream" {
-        // Parse id param as int
-        streamId, err := strconv.Atoi(vals.Get("id"))
+        // Parse id param as uint
+        sid, err := strconv.ParseUint(vals.Get("id"), 10, 64)
         if err != nil {
             w.WriteHeader(http.StatusBadRequest)
             fmt.Printf("Bad stream ID\n")
         } else {
-            // Query DB for all thumbs of a given stream
-            // Construct (from template?) series of <a><img></img></a> tags
+            streamId := uint(sid)
+            thumbs := database.GetStreamThumbs(streamId)
             var td StreamResponseData
-            for i := 0; i < 10; i++ {
+            for _, thumb := range thumbs {
+                // String() formats like "15h04m05s"
+                timeStr := time.Duration(
+                        time.Duration(thumb.VODSeconds)*time.Second).String()
                 td.Thumbs = append(td.Thumbs, StreamResponseThumb{
-                        LinkUrl:twitchVodBaseUrl+"asdf",
-                        ImageUrl:config.Path.SiteUrl+"/images/test.jpg"})
+                        LinkUrl:twitchVodBaseUrl+thumb.VOD+"?t="+timeStr,
+                        ImageUrl:config.Path.SiteUrl+thumb.ImagePath})
             }
-
+            // Fill thumbs into response HTML
             streamTemplate.Execute(w, td)
-
-            fmt.Printf("Stream ID: %v\n", streamId)
         }
 
     } else {

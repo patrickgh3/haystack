@@ -39,7 +39,7 @@ function selectPanel(panelElt) {
     if (!panelElt.dataset.clicked) {
         panelElt.dataset.clicked = "1";
         panelElt.dataset.scrubberhtml = '<img src="/haystack-dev/images/Loading_icon.gif">';
-        tryGetStream(panelElt, 5, 300);
+        tryGetStream(panelElt, 5, 100);
     }
 
     updateScrubberContents();
@@ -70,8 +70,9 @@ function tryGetStream(panelElt, max, delay) {
                     }, delay);
                 } else {
                     panelElt.dataset.clicked = "";
-                    panelElt.dataset.scrubberhtml = "";
-                    deselectPanels();
+                    panelElt.dataset.scrubberhtml =
+                            "Unable to load stream, please try again later.";
+                    updateScrubberContents();
                 }
             }
         }
