@@ -11,7 +11,7 @@ import (
     "github.com/patrickgh3/haystack/database"
 )
 
-const indexFilepath = "templates/newindex.html"
+const indexFilepath = "templates/index.html"
 const groupTimeFormat = "Monday 2006-01-02"
 
 var templ *template.Template
@@ -22,16 +22,16 @@ type WebpageData struct {
 }
 
 type PanelGroup struct {
-    Title string
     StreamPanels []StreamPanel
+    Title string
 }
 
 type StreamPanel struct {
     StreamID uint
     ChannelDisplayName string
-    ChannelName string
     CoverImages []string
     Title string
+    Live bool
 }
 
 // Times implements sort.Interface
@@ -61,57 +61,64 @@ func BuildWebpage (roundTime time.Time) {
     var wpd WebpageData
     wpd.AppBaseUrl = config.Path.SiteUrl
 
-    // For each stream in the DB, create a panel
+    // Grab all streams from the DB
     streams := database.GetAllStreams()
 
-    // TODO: sort streams first by day, then by currently live, then by viewers
-
-    // Group streams by day
-    streamgroups := make(map[time.Time][]database.Stream)
+    // Group streams by day into a Time -> []Stream map
+    streamGroups := make(map[time.Time][]database.Stream)
     for _, stream := range streams {
+        // Round time to nearest day in its time zone
         t := stream.StartTime
         rounded := time.Date(
                 t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
-        streamgroups[rounded] = append(streamgroups[rounded],
-                stream)
+        streamGroups[rounded] = append(streamGroups[rounded], stream)
     }
 
-    // Sort time groups by most recent
+    // Find sequential ordering of all group times
     var groupTimes Times
-    for k, _ := range streamgroups { groupTimes = append(groupTimes, k) }
+    for k, _ := range streamGroups { groupTimes = append(groupTimes, k) }
     sort.Sort(sort.Reverse(groupTimes))
 
+    // For each stream group, create a panel group
     for gi, groupTime := range groupTimes {
-        streams := streamgroups[groupTime]
-        // TODO: further sort streams in group by currently live, then viewers
-
-        panelgroup := PanelGroup{Title:groupTime.Format(groupTimeFormat)}
-        if gi == 0 {
-            panelgroup.Title = ""
+        var panelgroup PanelGroup
+        // Top group has no title
+        if gi != 0 {
+            panelgroup.Title = groupTime.Format(groupTimeFormat)
         }
 
-        for _, stream := range streams {
-            panel := StreamPanel{ChannelDisplayName:stream.ChannelDisplayName,
-                    Title:stream.Title, StreamID:stream.ID}
+        // For each stream, create a stream panel and put it into either
+        // live or not live array
+        groupStreams := streamGroups[groupTime]
+        var livePanels []StreamPanel
+        var notlivePanels []StreamPanel
 
-            // Grab 4 representative images from the stream for its panel
-            // [----|--------|--------|--------|----] where | are chosen images
-            thumbs := database.GetStreamThumbs(stream.ID)
-            numCoverImages := 4
-            for i := 0; i < numCoverImages; i++ {
-                // For each i, calculate fraction it is through the stream
-                fractionThroughStream :=
-                        (float64(i) + 0.5) / float64(numCoverImages)
-                // The closest thumb index that fraction corresponds to
-                chosenThumbIndex := int(
-                        fractionThroughStream * float64(len(thumbs)-1))
-                // Add image url of that thumb to the list
-                imageUrl := config.Path.SiteUrl +
-                        thumbs[chosenThumbIndex].ImagePath
-                panel.CoverImages = append(panel.CoverImages, imageUrl)
+        for _, stream := range groupStreams {
+            // Create panel for this stream
+            panel := PanelOfStream(stream)
+            // Determine whether this stream is considered Live or not and
+            // add it to the appropriate list
+            cutoff := roundTime.Add(-config.Timing.CutoffLeeway)
+            if stream.LastUpdateTime.After(cutoff) ||
+                    stream.LastUpdateTime.Equal(cutoff) {
+                panel.Live = true
+                livePanels = append(livePanels, panel)
+            } else {
+                panel.Live = false
+                notlivePanels = append(notlivePanels, panel)
             }
+        }
+        // Sort live and not live individually by viewer count
+        // TODO
+
+        // Add Live then Not Live to the actual group
+        for _, panel := range livePanels {
             panelgroup.StreamPanels = append(panelgroup.StreamPanels, panel)
         }
+        for _, panel := range notlivePanels {
+            panelgroup.StreamPanels = append(panelgroup.StreamPanels, panel)
+        }
+
         wpd.PanelGroups = append(wpd.PanelGroups, panelgroup)
     }
 
@@ -125,5 +132,29 @@ func BuildWebpage (roundTime time.Time) {
     w := bufio.NewWriter(f)
     templ.Execute(w, wpd)
     w.Flush()
+}
+
+// PanelOfStream generates a StreamPanel based on a stream
+func PanelOfStream(stream database.Stream) StreamPanel {
+    panel := StreamPanel{ChannelDisplayName:stream.ChannelDisplayName,
+                Title:stream.Title, StreamID:stream.ID}
+
+    // Grab 4 representative images from the stream for its panel
+    // [----|--------|--------|--------|----] where | are chosen images
+    thumbs := database.GetStreamThumbs(stream.ID)
+    numCoverImages := 4
+    for i := 0; i < numCoverImages; i++ {
+        // For each i, calculate fraction it is through the stream
+        fractionThroughStream :=
+                (float64(i) + 0.5) / float64(numCoverImages)
+        // The closest thumb index that fraction corresponds to
+        chosenThumbIndex := int(
+                fractionThroughStream * float64(len(thumbs)-1))
+        // Add image url of that thumb to the array
+        imageUrl := config.Path.SiteUrl +
+                thumbs[chosenThumbIndex].ImagePath
+        panel.CoverImages = append(panel.CoverImages, imageUrl)
+    }
+    return panel
 }
 

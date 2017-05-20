@@ -38,7 +38,7 @@ function selectPanel(panelElt) {
     // Request scrubber HTML if not gotten yet
     if (!panelElt.dataset.clicked) {
         panelElt.dataset.clicked = "1";
-        var imgurl = haystackBaseUrl+'/images/Loading_icon.gif';
+        var imgurl = haystackBaseUrl+'/images/loading.gif';
         panelElt.dataset.scrubberhtml = '<img src="'+imgurl+'">';
         tryGetStream(panelElt, 5, 100);
     }

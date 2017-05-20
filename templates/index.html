@@ -15,6 +15,9 @@ body { background-color:#111; color:#ddd; letter-spacing:0.02em;
     .streampanel { display:inline-block; margin:1em; position:relative; 
                    width:300px; height:220px; text-align:center;
                    margin-bottom:130px; }
+        .deselected { outline:1px solid #888; } 
+        .selected { outline:7px solid white; } 
+        .live { color:#FFBABA; background-color:#580000; }
         .streampanel:hover { cursor:pointer; }
         .streampanelhighlight { z-index:1; background-color:white; opacity:0;
                                 position:absolute; width:100%; height:100%; }
@@ -23,18 +26,17 @@ body { background-color:#111; color:#ddd; letter-spacing:0.02em;
              text-overflow:ellipsis; margin:0 5%; text-align:center; }
         .coverimages { width:100%; bottom:0; position:absolute; }
             .coverimages img { display:inline-block; width:50%; float:left; }
-    #scrubber { background-color:#333; visibility:hidden; position:absolute;
-                z-index:1; width:80%; height:100px; border:5px solid white;
+    #scrubber { visibility:hidden; position:absolute; margin-top:7px;
+                z-index:1; width:80%; height:100px; outline:7px solid white;
                 display:flex; }
         #scrubber a { display:inline-block; overflow:hidden; object-fit:cover;
-                      background-color:white; }
-        #scrubber img { height:100%; width:auto; }
-        #scrubber img:hover { opacity: .7; }
+                      background-color:white; max-width:80px; display:flex; }
+        #scrubber img { height:100%; width:auto; display:block; 
+                        overflow:hidden; object-fit:cover; }
+        #scrubber img:hover { opacity:.7; }
     #magnifier { position:absolute; visibility:hidden; z-index:1;
-                 background-size:contain; border: 3px solid white; }
-        #magnifier img { display: block; width:480px; height: 270px; }
-.deselected { outline:1px solid #888; } 
-.selected { outline:5px solid white; } 
+                 background-size:contain; border:3px solid white; }
+        #magnifier img { display:block; width:480px; height:270px; }
         </style>
         <script type="text/javascript">
             haystackBaseUrl = {{.AppBaseUrl}};
@@ -57,7 +59,7 @@ body { background-color:#111; color:#ddd; letter-spacing:0.02em;
             <div class="panelgroup">
             <h1>{{.Title}}</h1>
 {{range .StreamPanels}}
-                <div class="streampanel deselected" onClick="selectPanel(this)"
+                <div class="streampanel deselected {{if .Live}}live{{end}}" onClick="selectPanel(this)"
                 data-clicked="" data-streamid="{{.StreamID}}" data-scrubberhtml="">
                     <div class="streampanelhighlight"></div>
                     <h3>{{.ChannelDisplayName}}</h3>
