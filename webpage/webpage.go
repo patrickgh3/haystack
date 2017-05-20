@@ -17,6 +17,7 @@ const groupTimeFormat = "Monday 2006-01-02"
 var templ *template.Template
 
 type WebpageData struct {
+    AppBaseUrl string
     PanelGroups []PanelGroup
 }
 
@@ -32,12 +33,6 @@ type StreamPanel struct {
     CoverImages []string
     Title string
 }
-
-// ByStart implements sort.Interface for []Stream
-/*type ByStart []Stream
-func (b ByStart) Len() int { return len(b) }
-func (b ByStart) Swap(i, j int) { b[i], b[j] = b[j], b[i] }
-func (b ByStart) Less(i, j int) bool { return b[i].StartPos < b[j].StartPos }*/
 
 // Times implements sort.Interface
 type Times []time.Time
@@ -64,6 +59,8 @@ func truncateString (s string) string {
 // BuildWebpage generates an HTML page with up-to-date thumbnail content.
 func BuildWebpage (roundTime time.Time) {
     var wpd WebpageData
+    wpd.AppBaseUrl = config.Path.SiteUrl
+
     // For each stream in the DB, create a panel
     streams := database.GetAllStreams()
 
@@ -84,11 +81,14 @@ func BuildWebpage (roundTime time.Time) {
     for k, _ := range streamgroups { groupTimes = append(groupTimes, k) }
     sort.Sort(sort.Reverse(groupTimes))
 
-    for _, groupTime := range groupTimes {
+    for gi, groupTime := range groupTimes {
         streams := streamgroups[groupTime]
         // TODO: further sort streams in group by currently live, then viewers
 
         panelgroup := PanelGroup{Title:groupTime.Format(groupTimeFormat)}
+        if gi == 0 {
+            panelgroup.Title = ""
+        }
 
         for _, stream := range streams {
             panel := StreamPanel{ChannelDisplayName:stream.ChannelDisplayName,

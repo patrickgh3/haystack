@@ -15,6 +15,7 @@ var config struct {
     Twitch *ConfTwitch `yaml:"twitch"`
     DB *ConfDB `yaml:"db"`
     Timing *ConfTiming `yaml:"timing"`
+    WebServer *ConfWebServer `yaml:"webserver"`
 }
 
 type ConfPath struct {
@@ -37,14 +38,21 @@ type ConfDB struct {
 type ConfTiming struct {
     PeriodSeconds int `yaml:"period-seconds"`
     NumPeriods int `yaml:"num-periods"`
+    CutoffSeconds int `yaml:"cutoff-seconds"`
     Period time.Duration
-    LabelPeriod time.Duration
+    CutoffLeeway time.Duration
+}
+
+type ConfWebServer struct {
+    IP string `yaml:"ip"`
+    Port int `yaml:"port"`
 }
 
 var Path ConfPath
 var Twitch ConfTwitch
 var DB ConfDB
 var Timing ConfTiming
+var WebServer ConfWebServer
 
 // ReadConfig populates config structs from the config file.
 func ReadConfig() {
@@ -65,11 +73,13 @@ func ReadConfig() {
     config.Twitch = &Twitch
     config.DB = &DB
     config.Timing = &Timing
+    config.WebServer = &WebServer
 
     yaml.Unmarshal(buf, &config)
 
     // Additional calculation
     Timing.Period = time.Duration(Timing.PeriodSeconds) * time.Second
     Path.Images = Path.Root + Path.ImagesRelative
+    Timing.CutoffLeeway = time.Duration(Timing.CutoffSeconds) * time.Second
 }
 

@@ -2,9 +2,10 @@ package webserver
 
 import (
     "fmt"
+    "net"
     "net/http"
     "net/http/fcgi"
-    "net"
+    "net/url"
     "strings"
     "path"
     "html/template"
@@ -40,7 +41,11 @@ func (s FastCGIServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     fmt.Printf("got request: %v\n", r.URL.Path)
 
     // Strip app root url prefix from url, and clean it
-    prefix := "/haystack-dev"
+    siteURL, err := url.Parse(config.Path.SiteUrl)
+    if err != nil {
+        panic(err)
+    }
+    prefix := siteURL.Path
     if strings.HasPrefix(r.URL.Path, prefix) {
         r.URL.Path = path.Clean(r.URL.Path)
         r.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
@@ -69,18 +74,24 @@ func (s FastCGIServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
             fmt.Printf("Bad stream ID\n")
         } else {
             streamId := uint(sid)
-            thumbs := database.GetStreamThumbs(streamId)
             var td StreamResponseData
+            thumbs := database.GetStreamThumbs(streamId)
+
             for _, thumb := range thumbs {
-                // String() formats like "15h04m05s"
+                // Format time like "15h04m05s"
                 timeStr := time.Duration(
                         time.Duration(thumb.VODSeconds)*time.Second).String()
                 td.Thumbs = append(td.Thumbs, StreamResponseThumb{
                         LinkUrl:twitchVodBaseUrl+thumb.VOD+"?t="+timeStr,
                         ImageUrl:config.Path.SiteUrl+thumb.ImagePath})
             }
+
             // Fill thumbs into response HTML
             streamTemplate.Execute(w, td)
+            // Disable client-side caching
+            w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+            w.Header().Set("Pragma", "no-cache")
+            w.Header().Set("Expries", "0")
         }
 
     } else {
@@ -91,7 +102,8 @@ func (s FastCGIServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // Serve starts the web server.
 func Serve() {
     fmt.Printf("Starting server...\n")
-    l, _ := net.Listen("tcp", "127.0.0.1:4424") // TODO: port (IP?) configurable
+    l, _ := net.Listen("tcp", config.WebServer.IP+":"+
+            strconv.Itoa(config.WebServer.Port))
     b := new(FastCGIServer)
     fcgi.Serve(l, b)
 }

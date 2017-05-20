@@ -38,7 +38,8 @@ function selectPanel(panelElt) {
     // Request scrubber HTML if not gotten yet
     if (!panelElt.dataset.clicked) {
         panelElt.dataset.clicked = "1";
-        panelElt.dataset.scrubberhtml = '<img src="/haystack-dev/images/Loading_icon.gif">';
+        var imgurl = haystackBaseUrl+'/images/Loading_icon.gif';
+        panelElt.dataset.scrubberhtml = '<img src="'+imgurl+'">';
         tryGetStream(panelElt, 5, 100);
     }
 
@@ -56,7 +57,8 @@ function updateScrubberContents() {
 // Send a request for a panel's stream, and save/update the result if successful
 function tryGetStream(panelElt, max, delay) {
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', '/haystack-dev/stream?id='+panelElt.dataset.streamid, true);
+    var url = haystackBaseUrl+'/stream?id='+panelElt.dataset.streamid;
+    xhr.open('GET', url, true);
     xhr.onreadystatechange = function() {
         if (this.readyState == 4) {
             if (this.status == 200) {

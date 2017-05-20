@@ -68,41 +68,25 @@ func Update () {
 
         // Query Twitch for the channel's most recent (current) archive video ID
         archive := twitchapi.ChannelRecentArchive(stream.Channel.Id)
-        var vodID string
-        var vodSeconds int
-        var vodTime time.Time
         if archive == nil {
             fmt.Println("WARN: archive was nil")
-            /*vodID = ""
-            vodSeconds = 0*/
             continue
-        } else {
-            vodID = archive.Id
-            vodSeconds = int(roundTime.Sub(archive.Created_At_Time).Seconds())
-            vodTime = archive.Created_At_Time
         }
+        vodID := archive.Id
+        vodSeconds := int(roundTime.Sub(archive.Created_At_Time).Seconds())
+        vodTime := archive.Created_At_Time
 
+        // Download stream preview image from Twitch
         imagePath := config.Path.ImagesRelative + "/" +
                 stream.Channel.Name + "_" + unixTimeString + ".jpg"
         imageDLPath := config.Path.Root + imagePath
         imageUrl := stream.Preview.Medium
-
-        // Download stream preview image from Twitch
         DownloadImage(imageUrl, imageDLPath)
 
         // Finally, store new info for this stream in the DB
-        // If VOD ID in streams table, add thumb to that
-        // Else (new stream just started) add stream and this thumb to it
-
-        // Want: DB Stream{ChannelName, ChannelDisplayName, Title}
-        //       DB Thumb{StreamID, VODSeconds, VOD, ImagePath, Viewers}
-
         database.AddThumbToDB(
-                stream.Channel.Name, stream.Channel.Display_name,
+                roundTime, stream.Channel.Name, stream.Channel.Display_name,
                 vodSeconds, vodID, imagePath, vodTime, stream.Channel.Status)
-
-        //database.InsertThumb(
-        //    channelName, roundTime, vodID, imagePath, vodTime, status)
     }
 
     // Prune old streams from the DB
