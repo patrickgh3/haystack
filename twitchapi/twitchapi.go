@@ -22,6 +22,7 @@ type VideosResponse struct {
 type Stream struct {
     Channel *Channel
     Preview *Preview
+    Viewers int
 }
 
 type Channel struct {

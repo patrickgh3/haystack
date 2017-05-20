@@ -15,6 +15,8 @@ type Stream struct {
     Title               string  `gorm:"size:150"`
     StartTime           time.Time
     LastUpdateTime      time.Time
+    AverageViewers      float32
+    NumThumbs           uint
 }
 
 type Thumb struct {
@@ -43,7 +45,7 @@ func InitDB() {
 
 func AddThumbToDB(roundTime time.Time, ChannelName string,
         ChannelDisplayName string, VODSeconds int, VOD string,
-        ImagePath string, StartTime time.Time, Title string) {
+        ImagePath string, StartTime time.Time, Title string, viewers int) {
     // Find existing stream for this new thumb, if there is one
     var s []Stream
     cutoff := roundTime.Add(-config.Timing.CutoffLeeway)
@@ -51,18 +53,26 @@ func AddThumbToDB(roundTime time.Time, ChannelName string,
              ChannelName, cutoff).Find(&s)
 
     // Create a stream for this thumb if none already exist,
-    // or set update time if it does exist
+    // or update current stream if it does exist
     var streamid uint
     if len(s) == 0 {
         newstream := Stream{
                 ChannelName:ChannelName, ChannelDisplayName:ChannelDisplayName,
-                StartTime:StartTime, LastUpdateTime:roundTime, Title:Title}
+                StartTime:StartTime, LastUpdateTime:roundTime, Title:Title,
+                AverageViewers:float32(viewers)}
         db.Create(&newstream)
         streamid = newstream.ID
     } else {
-        streamid = s[0].ID
-        s[0].LastUpdateTime = roundTime
-        db.Save(&s[0])
+        str := s[0]
+        streamid = str.ID
+        str.LastUpdateTime = roundTime
+        str.NumThumbs++
+        // Running average = average*(6/7) + newpoint*(1/7), assuming 7 thumbs
+        str.AverageViewers =
+                float32(str.AverageViewers) *
+                float32(str.NumThumbs-1) / float32(str.NumThumbs) +
+                float32(viewers) / float32(str.NumThumbs)
+        db.Save(&str)
     }
 
     // Insert the thumb with ID of its stream

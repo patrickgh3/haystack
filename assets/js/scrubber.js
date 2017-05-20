@@ -15,6 +15,12 @@ lastSelectedPanel = null;
 
 // Select a given panel element when it's clicked
 function selectPanel(panelElt) {
+    // If clicked same panel twice, hide scrubber
+    if (panelElt == lastSelectedPanel) {
+        deselectPanels();
+        return;
+    }
+
     // Grab scrubber and calculate its new coordinates
     var s = document.getElementById("scrubber");
     var containerCoords = getDocumentCoords(panelElt.parentElement);

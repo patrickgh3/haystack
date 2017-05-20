@@ -86,7 +86,8 @@ func Update () {
         // Finally, store new info for this stream in the DB
         database.AddThumbToDB(
                 roundTime, stream.Channel.Name, stream.Channel.Display_name,
-                vodSeconds, vodID, imagePath, vodTime, stream.Channel.Status)
+                vodSeconds, vodID, imagePath, vodTime, stream.Channel.Status,
+                stream.Viewers)
     }
 
     // Prune old streams from the DB

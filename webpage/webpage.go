@@ -32,6 +32,7 @@ type StreamPanel struct {
     CoverImages []string
     Title string
     Live bool
+    Viewers int
 }
 
 // Times implements sort.Interface
@@ -39,6 +40,12 @@ type Times []time.Time
 func (t Times) Len() int { return len(t) }
 func (t Times) Swap(i, j int) { t[i], t[j] = t[j], t[i] }
 func (t Times) Less(i, j int) bool { return t[i].Before(t[j]) }
+
+// ByViewers implements sort.Interface
+type ByViewers []StreamPanel
+func (t ByViewers) Len() int { return len(t) }
+func (t ByViewers) Swap(i, j int) { t[i], t[j] = t[j], t[i] }
+func (t ByViewers) Less(i, j int) bool { return t[i].Viewers > t[j].Viewers }
 
 func InitTemplate () {
     ef, err := osext.ExecutableFolder()
@@ -109,7 +116,8 @@ func BuildWebpage (roundTime time.Time) {
             }
         }
         // Sort live and not live individually by viewer count
-        // TODO
+        sort.Sort(ByViewers(livePanels))
+        sort.Sort(ByViewers(notlivePanels))
 
         // Add Live then Not Live to the actual group
         for _, panel := range livePanels {
@@ -137,7 +145,8 @@ func BuildWebpage (roundTime time.Time) {
 // PanelOfStream generates a StreamPanel based on a stream
 func PanelOfStream(stream database.Stream) StreamPanel {
     panel := StreamPanel{ChannelDisplayName:stream.ChannelDisplayName,
-                Title:stream.Title, StreamID:stream.ID}
+            Title:stream.Title, StreamID:stream.ID,
+            Viewers:int(stream.AverageViewers)}
 
     // Grab 4 representative images from the stream for its panel
     // [----|--------|--------|--------|----] where | are chosen images

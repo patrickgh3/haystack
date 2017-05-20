@@ -14,16 +14,18 @@ body { background-color:#111; color:#ddd; letter-spacing:0.02em;
 #content { text-align:center; margin-left:auto; margin-right:auto; }
     .streampanel { display:inline-block; margin:1em; position:relative; 
                    width:300px; height:220px; text-align:center;
-                   margin-bottom:130px; }
-        .deselected { outline:1px solid #888; } 
+                   margin-bottom:130px; background-color:#222; }
+        .deselected { /*outline:1px solid #888;*/ }
         .selected { outline:7px solid white; } 
-        .live { color:#FFBABA; background-color:#580000; }
+        .livepanel { color:#FFBABA; background-color:#580000; }
         .streampanel:hover { cursor:pointer; }
         .streampanelhighlight { z-index:1; background-color:white; opacity:0;
                                 position:absolute; width:100%; height:100%; }
             .streampanelhighlight:hover { opacity:0.2; }
         h3 { font-weight:normal; overflow:hidden; white-space:nowrap;
              text-overflow:ellipsis; margin:0 5%; text-align:center; }
+        .viewers { position:absolute; color:red; top:0; right:0.5em;
+                   text-align:right; font-size:1.17em; }
         .coverimages { width:100%; bottom:0; position:absolute; }
             .coverimages img { display:inline-block; width:50%; float:left; }
     #scrubber { visibility:hidden; position:absolute; margin-top:7px;
@@ -59,11 +61,12 @@ body { background-color:#111; color:#ddd; letter-spacing:0.02em;
             <div class="panelgroup">
             <h1>{{.Title}}</h1>
 {{range .StreamPanels}}
-                <div class="streampanel deselected {{if .Live}}live{{end}}" onClick="selectPanel(this)"
+                <div class="streampanel deselected {{if .Live}}livepanel{{end}}" onClick="selectPanel(this)"
                 data-clicked="" data-streamid="{{.StreamID}}" data-scrubberhtml="">
                     <div class="streampanelhighlight"></div>
                     <h3>{{.ChannelDisplayName}}</h3>
                     <h3>{{.Title}}</h3>
+                    <span class="viewers">{{if .Live}}Live {{end}}<img src="images/viewers.png"> {{.Viewers}}</span>
                     <div class="coverimages">
                         <img src="{{index .CoverImages 0}}">
                         <img src="{{index .CoverImages 1}}">
