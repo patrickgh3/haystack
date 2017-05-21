@@ -1,0 +1,42 @@
+Upon update, for each stream we see live:
+
+Last archive is correct IF: stream ID matches archive ID
+
+Find the most recently stream entry with that channel name.
+    It is considered the current stream of the channel IF:
+        it was last updated within the cutoff period (standard continuing stream)
+        OPTIONAL OR: archive broadcast ID = DB stream's LastStreamId
+
+If couldn't find the current stream entry, then make one:
+    If archive != nil and archive is current, StartTime = archive.StartTime
+    Else StartTime = current time
+    
+
+Insert the thumb with:
+    If archive != nil and archive is current, VOD = archive.ID
+    Else VOD = ""
+
+
+
+TheNewDudos case: (has and old archived stream, current stream not archived)
+    archive is calculated as NOT current
+    not within cutoff period
+    so, new stream created, start time = current time, VOD = ""
+
+Starting new archived stream:
+    archive is current
+    not within cutoff period
+    new stream created, start time = archive time, thumb vod = archive id
+
+Continuing archived stream:
+    archive is current
+    within cutoff period
+    update existing stream, thumb vod = archive id
+
+Continuing archived stream but vod split in two:
+    archive is current
+    within cutoff period
+    update existing stream, thumb vod = archive id
+
+
+    

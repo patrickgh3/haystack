@@ -1,0 +1,44 @@
+IWBTG page displays:
+    All streams and thumbs that were captured for all streams set to IWBTG
+
+Klazen page displays:
+    All streams that Klazen follows, no matter their game
+
+
+
+What happens if:
+Klazen follows someone?
+Klazen unfollows someone?
+Someone stops playing IWBTG mid-stream?
+Someone starts playing IWBTG mid-stream?
+Someone is playing IWBTG part-stream AND Klazen follows them?
+
+Right now the criteria for stream thumbs being captured is all the streams
+returned by a certain Twitch API query.
+This query could be: by game, by user follows.
+Could also be: by community, or some other arbitrary unknown criteria.
+
+It would be nice if the system could add new groups easily, rather than
+me having to edit the app's code and re-deploy.
+
+I want to support at minimum By Game (any game) and By User Follows (any user).
+
+Maybe have Groups table, with id, Name, QueryType, QueryParam
+And GroupStreams table, with id, groupid, streamid
+
+If a stream shows up in a game query, add that stream to the group's inerest.
+Note: Group has many streams, NOT Group has many channel names.
+
+This will cause streams with only sections of IWBTG to show up in the
+IWBTG page, but I think that's acceptable.
+
+Answering the questions above:
+1. Just start capturing that channel
+2. Just stop capturing that channel
+3. Keep capturing it til the stream ends
+4. Start capturing from that point on
+5. Capture the whole stream, and both Klazen and IWBTG pages will display it
+
+We WON'T do any queries to Twitch for all the channels Klazen follows, to keep
+it simple. There's no equivalent for Game queries, or others. Just base it off
+of lists of currently live channels.

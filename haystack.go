@@ -68,13 +68,24 @@ func Update () {
 
         // Query Twitch for the channel's most recent (current) archive video ID
         archive := twitchapi.ChannelRecentArchive(stream.Channel.Id)
-        if archive == nil {
-            fmt.Println("WARN: archive was nil")
-            continue
+
+        // If this snapshot doesn't correspond to the most recent archive, then
+        // either the streamer has disabled archiving, the archive somehow isn't
+        // accessible yet, or something else. So, store no VOD for this thumb.
+        vodID := ""
+        vodSeconds := 0
+        vodTime := roundTime
+        if archive != nil {
+            if archive.Broadcast_Id == stream.Id {
+                vodID = archive.Id
+                vodSeconds = int(roundTime.Sub(archive.Created_At_Time).Seconds())
+                vodTime = archive.Created_At_Time
+            } else {
+                fmt.Printf("recent archive is not current stream\n")
+            }
+        } else {
+            fmt.Printf("recent archive was nil\n")
         }
-        vodID := archive.Id
-        vodSeconds := int(roundTime.Sub(archive.Created_At_Time).Seconds())
-        vodTime := archive.Created_At_Time
 
         // Download stream preview image from Twitch
         imagePath := config.Path.ImagesRelative + "/" +

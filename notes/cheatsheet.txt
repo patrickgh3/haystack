@@ -34,6 +34,7 @@ Channel IDs
 27787567    Pie
 10915868    Stonk
 43248215    Maxinator
+73236552    Cwpbot
 
 
 Community IDs

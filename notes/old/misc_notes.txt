@@ -1,3 +1,11 @@
+Snippet to scan just one specific channel:
+    /*var sr []*twitchapi.Stream
+    str := twitchapi.TestOneStream("73236552")
+    if str != nil {
+        sr = append(sr, str)
+    }*/
+
+
 TEST CASE
 japanese twitch name, but still should save image as english. (name vs display_name)
 

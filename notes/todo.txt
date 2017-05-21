@@ -1,17 +1,13 @@
 Make the code a joy to work on.
 
-New UI
-Median(?) number of viewers of stream
 Multiple channel group pages (fangames, Patrick, Klazen)
 Display multiple titles (if 3 or less)
 
 Error handing (!)
 Logging (!)
-DB hook up to repo (orm? ansible?)
 Javascript timezone markers (+ fallback?)
 Stats (unique channels in db, thumbs in db, last generated date)
 Unicode stream titles and usernames
 
 Handle error in CurrRowStruct() parsing date string "" (bad data in DB somehow)
-Allow 1-2 thumb gaps but still considered same stream if random requests fail
 Frontend - Page starts blank with buttons you can click to load haystacks

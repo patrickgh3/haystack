@@ -17,7 +17,7 @@ import (
 
 var streamTemplate = template.Must(template.New("streamTemplate").Parse(
 `{{range .Thumbs}}
-<a href="{{.LinkUrl}}" target="_blank">
+<a {{if .HasVOD}}href="{{.LinkUrl}}"{{else}}class="novodlink"{{end}} target="_blank">
     <img src="{{.ImageUrl}}" onmousemove="magnify(this, true)" onmouseout="unmagnify()">
 </a>
 {{end}}
@@ -30,6 +30,7 @@ type StreamResponseData struct {
 type StreamResponseThumb struct {
     LinkUrl string
     ImageUrl string
+    HasVOD bool
 }
 
 const twitchVodBaseUrl = "https://www.twitch.tv/videos/"
@@ -81,9 +82,15 @@ func (s FastCGIServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
                 // Format time like "15h04m05s"
                 timeStr := time.Duration(
                         time.Duration(thumb.VODSeconds)*time.Second).String()
+                linkUrl := ""
+                hasVOD := len(thumb.VOD) > 0
+                if hasVOD {
+                    linkUrl = twitchVodBaseUrl+thumb.VOD+"?t="+timeStr
+                }
                 td.Thumbs = append(td.Thumbs, StreamResponseThumb{
-                        LinkUrl:twitchVodBaseUrl+thumb.VOD+"?t="+timeStr,
-                        ImageUrl:config.Path.SiteUrl+thumb.ImagePath})
+                        LinkUrl:linkUrl,
+                        ImageUrl:config.Path.SiteUrl+thumb.ImagePath,
+                        HasVOD:hasVOD})
             }
 
             // Fill thumbs into response HTML

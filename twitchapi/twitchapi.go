@@ -10,40 +10,67 @@ import (
 )
 
 type StreamsResponse struct {
-    Total int `json:"_total"`
+    Total   int `json:"_total"`
     Streams []*Stream
 }
 
-type VideosResponse struct {
-    Total int `json:"_total"`
-    Videos []*Video
+type StreamResponse struct {
+    Stream *Stream
 }
 
 type Stream struct {
+    IdInt   int `json:"_id,"`
+    Id      string `json:"-"`
     Channel *Channel
     Preview *Preview
     Viewers int
 }
 
 type Channel struct {
-    IdInt int `json:"_id"`
-    Id string
-    Display_name string
-    Name string
-    Status string
+    IdInt           int `json:"_id"`
+    Id              string `json:"-"`
+    Display_name    string
+    Name            string
+    Status          string
 }
 
 type Preview struct {
-    Medium string
+    Medium  string
+}
+
+type VideosResponse struct {
+    Total   int `json:"_total"`
+    Videos  []*Video
 }
 
 type Video struct {
-    Id string `json:"_id"`
-    Created_At string
-    Created_At_Time time.Time
+    Id              string `json:"_id"`
+    Broadcast_IdInt int `json:"broadcast_id"`
+    Broadcast_Id    string
+    Created_At      string
+    Created_At_Time time.Time `json:"-"`
 }
 
 const videoTimeString = "2006-01-02T15:04:05Z"
+
+func convertStreamTypes(stream *Stream) {
+    if stream != nil {
+        stream.Id = strconv.Itoa(stream.IdInt)
+        stream.Channel.Id = strconv.Itoa(stream.Channel.IdInt)
+    }
+}
+
+func convertVideoTypes(video *Video) {
+    if video != nil {
+        video.Broadcast_Id = strconv.Itoa(video.Broadcast_IdInt)
+        t, err := time.Parse(videoTimeString, video.Created_At)
+        if err != nil {
+            panic(err)
+        }
+        video.Created_At_Time = t
+        video.Id = video.Id[1:] // Strip leading "v"
+    }
+}
 
 // AllStreams returns all streams which match a given query.
 // See https://dev.twitch.tv/docs/v5/reference/streams/#get-all-streams
@@ -53,7 +80,7 @@ func AllStreams (queryString string) *StreamsResponse {
     generalQuery(urlTail, &r)
 
     for _, stream := range r.Streams {
-        stream.Channel.Id = strconv.Itoa(stream.Channel.IdInt)
+        convertStreamTypes(stream)
     }
     return r
 }
@@ -65,13 +92,8 @@ func ChannelVideos (channelID string, queryString string) *VideosResponse {
     r := new(VideosResponse)
     generalQuery(urlTail, &r)
 
-    for _, v := range r.Videos {
-        t, err := time.Parse(videoTimeString, v.Created_At)
-        if err != nil {
-            panic(err)
-        }
-        v.Created_At_Time = t
-        v.Id = v.Id[1:] // Strip leading "v"
+    for _, video := range r.Videos {
+        convertVideoTypes(video)
     }
     return r
 }
@@ -84,6 +106,14 @@ func ChannelRecentArchive (channelID string) *Video {
         return nil
     }
     return vr.Videos[0]
+}
+
+func TestOneStream (channelID string) *Stream {
+    urlTail := fmt.Sprintf("/streams/%v", channelID)
+    r := new(StreamResponse)
+    generalQuery(urlTail, &r)
+    convertStreamTypes(r.Stream)
+    return r.Stream
 }
 
 // generalQuery performs an API query and parses the JSON response.

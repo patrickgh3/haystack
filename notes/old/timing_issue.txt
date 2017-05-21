@@ -1,0 +1,48 @@
+Symptom: A stream from 3 days ago is showing up on the page with
+VOD times of 68 hours +.
+
+I beleive the cause is the user streamed 3 days ago with archiving
+enabled, then did a stream recently with archiving disabled.
+The app looked at the most recent VOD on the channel (3 days ago)
+and took that for this stream.
+
+We should check if the most recent VOD's starting time is sane.
+
+
+
+I ended up finding and using the broadcast_id of the stream which
+links streams and videos together, and checking if the stream id matched
+up with its most recent broadcast id (if it had one), and if it didnt,
+assme the current stream isnt archived.
+
+But I forgot that I want the behavior that multiple Twitch streams
+can be condensed into a single one of MY streams. I already implemented
+this logic when inserting a thumb into the database, it looks for a "current"
+stream that is within the specified cutoff period.
+
+This cutoff logic should be used in multiple places:
+1. When adding thumb to DB, determine if the stream with that channel name is
+    considered current, or whether we should create a new stream.
+2. In webpage generation, to determine if panels displayed as "live" or not
+
+So in (1.) it ALSO needs to incorporate the result of the archive query. (?)
+
+Logic:
+Does Stream with recent update time exist in the DB for this channel?
+    If so, add our thumb to it, and update the stream.
+    If not, then create a new stream.
+    Now, we need to determine the VOD of the thumb.
+    If recent archive == nil, then VOD = "" // never archives streams
+    If recent archive != nil:
+        If broadcast id matches OR ARCHIVE within update cutoff: VOD = archive.id
+        else: VOD = "" // has old archived streams, but current isnt
+
+What is "sane"?
+Can't really compare current time to VOD's start time, cause we may have started
+the app mid-stream.
+I think we have to compare broadcast id.
+
+Case: start up haystack mid-stream
+broadcast ids match
+Case: Twitch stream gets split into 2 due to streamer's connection cut out
+update cutoff check passes
