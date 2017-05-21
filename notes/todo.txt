@@ -8,6 +8,7 @@ Logging (!)
 Javascript timezone markers (+ fallback?)
 Stats (unique channels in db, thumbs in db, last generated date)
 Unicode stream titles and usernames
+State OAuth2 parameter
 
 Handle error in CurrRowStruct() parsing date string "" (bad data in DB somehow)
 Frontend - Page starts blank with buttons you can click to load haystacks

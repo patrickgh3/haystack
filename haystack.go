@@ -57,11 +57,26 @@ func Update () {
     roundTime := time.Now().Round(config.Timing.Period)
     unixTimeString := strconv.FormatInt(roundTime.Unix(), 10);
 
-    // Query Twitch for all the currently live streams
-    sr := twitchapi.AllStreams("?game=I%20Wanna%20Be%20The%20Guy")
+    // Find unique streams (indexed by channel ID) across all filters
+    uniqueStreams := make(map[string]*twitchapi.Stream)
+    filters := database.GetAllFilters()
+    for _, filter := range filters {
+        var sr *twitchapi.StreamsResponse
+        if filter.QueryType == database.QueryTypeStreams {
+            sr = twitchapi.AllStreams(filter.QueryParam)
+        } else if filter.QueryType == database.QueryTypeFollows {
+            sr = twitchapi.FollowedStreams(filter.QueryParam)
+        }
+        for _, s := range sr.Streams {
+            id := s.Channel.Id
+            if _, seen := uniqueStreams[id]; !seen { // Idiom to check if in map
+                uniqueStreams[id] = s
+            }
+        }
+    }
 
-    // Iterate over all currently live streams, saving their info to the DB
-    for _, stream := range sr.Streams {
+    // For each stream, save a snapshot to the DB
+    for _, stream := range uniqueStreams {
         channelName := stream.Channel.Display_name
         status := stream.Channel.Status
         fmt.Printf("%v: %v\n", channelName, status)

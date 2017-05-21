@@ -35,6 +35,7 @@ Channel IDs
 10915868    Stonk
 43248215    Maxinator
 73236552    Cwpbot
+15699788    Patrickgh3
 
 
 Community IDs

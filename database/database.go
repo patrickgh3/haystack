@@ -8,6 +8,25 @@ import (
     "github.com/patrickgh3/haystack/config"
 )
 
+const (
+    QueryTypeStreams int = 1
+    QueryTypeFollows int = 2
+)
+
+type Filter struct {
+    gorm.Model
+    Name        string `gorm:"size:50"`
+    Subpath     string `gorm:"size:50"`
+    QueryType   int
+    QueryParam  string `gorm:"size:150"`
+}
+
+type Follow struct {
+    gorm.Model
+    FilterID    uint
+    StreamID    uint
+}
+
 type Stream struct {
     gorm.Model
     ChannelName         string  `gorm:"size:50"`
@@ -40,16 +59,18 @@ func InitDB() {
     }
 
     // Migrate the schema
-    db.AutoMigrate(&Stream{}, &Thumb{})
+    db.AutoMigrate(&Filter{}, &Follow{}, &Stream{}, &Thumb{})
 }
 
+// AddThumbToDB adds a new Thumb to the DB, possibly creating a new Stream.
 func AddThumbToDB(roundTime time.Time, ChannelName string,
         ChannelDisplayName string, VODSeconds int, VOD string,
         ImagePath string, StartTime time.Time, Title string, viewers int) {
     // Find most recently updated stream of this channel
     var foundStream *Stream
     var s []Stream
-    db.Where("channel_name = ?", ChannelName).Order("last_update_time desc").Find(&s)
+    db.Where("channel_name = ?", ChannelName).
+            Order("last_update_time desc").Find(&s)
     if len(s) != 0 {
         // The stream is valid if it was last updated within the cutoff
         cutoff := roundTime.Add(-config.Timing.CutoffLeeway)
@@ -86,6 +107,7 @@ func AddThumbToDB(roundTime time.Time, ChannelName string,
             ImagePath:ImagePath})
 }
 
+// GetStreamThumbs returns all thumbs corresponding to a stream id.
 func GetStreamThumbs(streamId uint) []Thumb {
     var thumbs []Thumb
     db.Where("stream_id = ?", streamId).Order("id asc").Find(&thumbs)
@@ -97,3 +119,11 @@ func GetAllStreams() []Stream {
     db.Find(&streams)
     return streams
 }
+
+// GetAllFilters returns all filters in the DB.
+func GetAllFilters() []Filter {
+    var filters []Filter
+    db.Find(&filters)
+    return filters
+}
+

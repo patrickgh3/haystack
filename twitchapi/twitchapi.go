@@ -9,6 +9,25 @@ import (
     "github.com/patrickgh3/haystack/config"
 )
 
+// Custom marshal type since Twitch is sometimes inconsistent with ints/strings
+// for IDs.
+// http://stackoverflow.com/questions/31625511/
+type jsonInt int
+func (i *jsonInt) UnmarshalJSON(data []byte) error {
+    if len(data) >= 2 && data[0] == '"' && data[len(data)-1] == '"' {
+        data = data[1 : len(data)-1]
+    }
+
+    var tmp int
+    err := json.Unmarshal(data, &tmp)
+    if err != nil {
+        return err
+    }
+
+    *i = jsonInt(tmp)
+    return nil
+}
+
 type StreamsResponse struct {
     Total   int `json:"_total"`
     Streams []*Stream
@@ -19,7 +38,7 @@ type StreamResponse struct {
 }
 
 type Stream struct {
-    IdInt   int `json:"_id,"`
+    IdInt   int `json:"_id"`
     Id      string `json:"-"`
     Channel *Channel
     Preview *Preview
@@ -27,7 +46,7 @@ type Stream struct {
 }
 
 type Channel struct {
-    IdInt           int `json:"_id"`
+    IdInt           jsonInt `json:"_id"`
     Id              string `json:"-"`
     Display_name    string
     Name            string
@@ -53,10 +72,18 @@ type Video struct {
 
 const videoTimeString = "2006-01-02T15:04:05Z"
 
+// These "convert struct types" functions perform type converions
+// into useful forms for IDs, times, etc.
+func convertChannelTypes(channel *Channel) {
+    if channel != nil {
+        channel.Id = strconv.Itoa(int(channel.IdInt))
+    }
+}
+
 func convertStreamTypes(stream *Stream) {
     if stream != nil {
         stream.Id = strconv.Itoa(stream.IdInt)
-        stream.Channel.Id = strconv.Itoa(stream.Channel.IdInt)
+        convertChannelTypes(stream.Channel)
     }
 }
 
@@ -77,7 +104,7 @@ func convertVideoTypes(video *Video) {
 func AllStreams (queryString string) *StreamsResponse {
     urlTail := fmt.Sprintf("/streams/%v", queryString)
     r := new(StreamsResponse)
-    generalQuery(urlTail, &r)
+    generalQuery(urlTail, "", &r)
 
     for _, stream := range r.Streams {
         convertStreamTypes(stream)
@@ -90,7 +117,7 @@ func AllStreams (queryString string) *StreamsResponse {
 func ChannelVideos (channelID string, queryString string) *VideosResponse {
     urlTail := fmt.Sprintf("/channels/%v/videos%v", channelID, queryString)
     r := new(VideosResponse)
-    generalQuery(urlTail, &r)
+    generalQuery(urlTail, "", &r)
 
     for _, video := range r.Videos {
         convertVideoTypes(video)
@@ -108,16 +135,30 @@ func ChannelRecentArchive (channelID string) *Video {
     return vr.Videos[0]
 }
 
-func TestOneStream (channelID string) *Stream {
+// StreamByChannel returns the stream of a specified channel.
+// See https://dev.twitch.tv/docs/v5/reference/streams/#get-stream-by-user
+func StreamByChannel (channelID string) *Stream {
     urlTail := fmt.Sprintf("/streams/%v", channelID)
     r := new(StreamResponse)
-    generalQuery(urlTail, &r)
+    generalQuery(urlTail, "", &r)
     convertStreamTypes(r.Stream)
     return r.Stream
 }
 
+// FollowedStreams returns all live streams a user follows.
+// See https://dev.twitch.tv/docs/v5/reference/users/#get-user-follows
+func FollowedStreams (authorization string) *StreamsResponse {
+    urlTail := fmt.Sprintf("/streams/followed")
+    r := new(StreamsResponse)
+    generalQuery(urlTail, authorization, &r)
+    for _, s := range r.Streams {
+        convertStreamTypes(s)
+    }
+    return r
+}
+
 // generalQuery performs an API query and parses the JSON response.
-func generalQuery (urlTail string, v interface{}) {
+func generalQuery (urlTail string, authorization string, v interface{}) {
     url := fmt.Sprintf(
             "https://api.twitch.tv/kraken%v",
             urlTail,
@@ -130,6 +171,9 @@ func generalQuery (urlTail string, v interface{}) {
     }
     req.Header.Add("Accept", "application/vnd.twitchtv.v5+json")
     req.Header.Add("Client-ID", config.Twitch.ClientKey)
+    if len(authorization) > 0 {
+        req.Header.Add("Authorization", "OAuth "+authorization)
+    }
 
     // Make request
     response, err := client.Do(req)
