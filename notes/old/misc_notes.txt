@@ -1,3 +1,20 @@
+Snippet to add an old stream to DB (call before Prune())
+    /*t := roundTime.Add(-4 * time.Hour * 24)
+    database.AddThumbToDB(
+                t, "dummychannel", "DummyChannel", 260, "dummyVOD",
+                "/images/t/dummy.png", t, "Dummy Title", 420, []uint{420})
+    t = t.Add(10 * time.Second)
+    database.AddThumbToDB(
+                t, "dummychannel", "DummyChannel", 260, "dummyVOD",
+                "/images/t/dummy.png", t, "Dummy Title", 420, []uint{420})
+    t = t.Add(10 * time.Second)
+    database.AddThumbToDB(
+                t, "dummychannel", "DummyChannel", 260, "dummyVOD",
+                "/images/t/dummy.png", t, "Dummy Title", 420, []uint{420})*/
+
+
+
+
 Snippet to scan just one specific channel:
     /*var sr []*twitchapi.Stream
     str := twitchapi.TestOneStream("73236552")

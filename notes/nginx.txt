@@ -1,5 +1,5 @@
-location /haystack-dev/ {
-    try_files $uri $uri/ @haystack-dev;
+location ~ ^/haystack-dev(?:/(.*))?$ {
+    try_files $uri @haystack-dev;
 }
 location @haystack-dev {
     fastcgi_pass    127.0.0.1:4424;

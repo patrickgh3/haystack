@@ -78,6 +78,7 @@ func Update () {
             }
             taggedStreams[id].AppendFilter(filter.ID)
         }
+        database.UpdateFilter(filter.ID, roundTime)
     }
 
     // For each (stream, filters) pair, grab and save a snapshot to the DB
@@ -100,7 +101,7 @@ func Update () {
             if archive.Broadcast_Id == stream.Id {
                 vodID = archive.Id
                 vodSeconds = int(roundTime.Sub(archive.Created_At_Time).Seconds())
-                vodTime = archive.Created_At_Time
+                //vodTime = archive.Created_At_Time
             } else {
                 fmt.Printf("recent archive is not current stream\n")
             }
@@ -122,12 +123,20 @@ func Update () {
                 stream.Viewers, sf.FilterIds)
     }
 
-    // Update filters times
-    database.UpdateAllFilters(roundTime)
+    // Delete old streams (and their thumbs, follows, image files) from the DB
+    database.PruneOldStreams(roundTime)
 
-    // Prune old streams from the DB
-    // For all streams with created < cutoff, delete, and delete their thumbs
-    //numDeleted := database.DeleteOldThumbs(roundTime)
+    // TODO: Occasionally check for "stray" data:
+    // (Also perform this check on app startup)
+    // Follows whose stream or filter no longer exists
+    //     Have to check for each one.
+    // Thumbs whose stream no longer exists
+    //     Total of streams NumThumbs != # thumbs
+    // Image files whose thumb no longer exists
+    //     # image files != # thumbs
+
+    //check for stray images (don't have a thumb),
+    // thumbs (don't have a stream), follows (don't have a stream)
 
     fmt.Printf("update finish\n")
     /*fmt.Printf("%v deleted\n", numDeleted)

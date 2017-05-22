@@ -11,6 +11,7 @@ import (
     "html/template"
     "strconv"
     "time"
+    "io"
     "github.com/patrickgh3/haystack/config"
     "github.com/patrickgh3/haystack/database"
 )
@@ -113,6 +114,10 @@ func ServeStreamRequest(w http.ResponseWriter, r *http.Request) {
 // ServeRootPage serves a page listing all filters.
 func ServeRootPage(w http.ResponseWriter, r *http.Request) {
     // TODO
+    filters := database.GetAllFilters()
+    for _, filter := range filters {
+        io.WriteString(w, fmt.Sprintf("%v: %v<br>", filter.Name, filter.Subpath))
+    }
 }
 
 // Serve starts the web server.

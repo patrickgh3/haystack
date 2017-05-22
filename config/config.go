@@ -37,8 +37,8 @@ type ConfDB struct {
 
 type ConfTiming struct {
     PeriodSeconds int `yaml:"period-seconds"`
-    NumPeriods int `yaml:"num-periods"`
     CutoffSeconds int `yaml:"cutoff-seconds"`
+    PruneDays int `yaml:"prune-days"`
     Period time.Duration
     CutoffLeeway time.Duration
 }
@@ -78,8 +78,8 @@ func ReadConfig() {
     yaml.Unmarshal(buf, &config)
 
     // Additional calculation
-    Timing.Period = time.Duration(Timing.PeriodSeconds) * time.Second
     Path.Images = Path.Root + Path.ImagesRelative
+    Timing.Period = time.Duration(Timing.PeriodSeconds) * time.Second
     Timing.CutoffLeeway = time.Duration(Timing.CutoffSeconds) * time.Second
 }
 

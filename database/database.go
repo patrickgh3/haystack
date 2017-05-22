@@ -5,6 +5,7 @@ import (
     _ "github.com/jinzhu/gorm/dialects/mysql"
     "fmt"
     "time"
+    "os"
     "github.com/patrickgh3/haystack/config"
 )
 
@@ -116,6 +117,45 @@ func AddThumbToDB(roundTime time.Time, ChannelName string,
     }
 }
 
+// PruneOldStreams removes old streams along with their thumbs, follows, and
+// image files.
+func PruneOldStreams(roundTime time.Time) {
+    // Find all streams started before cutoff
+    // Remove all Thumbs of those streams (and delete their image files)
+    // Remove all Follows corresponding to those streams
+    // Remove the streams
+
+    t := roundTime
+    oldestDay := time.Date(
+            t.Year(), t.Month(), t.Day()-config.Timing.PruneDays,
+            0, 0, 0, 0, t.Location())
+
+    // TODO: Do this properly!
+    var thumbs []Thumb
+    db.Joins("join streams on streams.id = thumbs.stream_id AND streams.start_time < ?", oldestDay).Find(&thumbs)
+    for _, thumb := range thumbs {
+        DeleteImage(config.Path.Root + thumb.ImagePath)
+        db.Unscoped().Delete(&thumb)
+    }
+    fmt.Printf("%v thumbs deleted\n", len(thumbs))
+
+    var follows []Follow
+    db.Joins("join streams on streams.id = follows.stream_id AND streams.start_time < ?", oldestDay).Find(&follows)
+    for _, follow := range follows {
+        db.Unscoped().Delete(&follow)
+    }
+
+    db.Table("streams").Unscoped().Where("start_time < ?", oldestDay).Delete(&Stream{})
+}
+
+// TODO: move this logic elsewhere?
+func DeleteImage(filepath string) {
+    err := os.Remove(filepath)
+    if err != nil {
+        fmt.Printf("couldn't remove image %v\n", filepath)
+    }
+}
+
 // GetStreamThumbs returns all thumbs corresponding to a stream id.
 func GetStreamThumbs(streamId uint) []Thumb {
     var thumbs []Thumb
@@ -142,8 +182,9 @@ func GetAllFilters() []Filter {
     return filters
 }
 
-func UpdateAllFilters(roundTime time.Time) {
-    db.Table("filters").Update("last_update_time", roundTime)
+func UpdateFilter(filterId uint, roundTime time.Time) {
+    db.Table("filters").Where("id = ?", filterId).Update("last_update_time",
+            roundTime)
 }
 
 func GetFilterWithSubpath(Subpath string) *Filter {
