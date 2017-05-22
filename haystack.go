@@ -7,7 +7,6 @@ import (
     "github.com/patrickgh3/haystack/config"
     "github.com/patrickgh3/haystack/database"
     "github.com/patrickgh3/haystack/twitchapi"
-    "github.com/patrickgh3/haystack/webpage"
     "github.com/patrickgh3/haystack/webserver"
 )
 
@@ -18,13 +17,7 @@ func main () {
     // Initialize database
     database.InitDB()
     // Set up webpage stuff
-    webpage.InitTemplate()
-
-    // Rebuild the page upon new startup (useful for debugging)
-    /*now := time.Now()
-    roundTime := now.Round(config.Timing.Period)
-    //database.DeleteOldThumbs(roundTime)
-    webpage.BuildWebpage(roundTime)*/
+    webserver.InitTemplate()
 
     // Start web server to handle HTTP requets
     go webserver.Serve()
@@ -51,35 +44,48 @@ func TrackStreams() {
     }
 }
 
+type taggedStream struct {
+    Stream      *twitchapi.Stream
+    FilterIds   []uint
+}
+func (ts *taggedStream) AppendFilter(f uint) {
+    (*ts).FilterIds = append((*ts).FilterIds, f)
+}
+
 // Update grabs new thumbnails, deletes old ones, and generates the webpage.
 func Update () {
     // Compute the current time rounded to the interval
     roundTime := time.Now().Round(config.Timing.Period)
     unixTimeString := strconv.FormatInt(roundTime.Unix(), 10);
 
-    // Find unique streams (indexed by channel ID) across all filters
-    uniqueStreams := make(map[string]*twitchapi.Stream)
+    // Query Twitch for each filter's streams, and assemble a map of unique
+    // streams along with all filters which found them
+    taggedStreams := make(map[string]*taggedStream)
     filters := database.GetAllFilters()
     for _, filter := range filters {
+        // Make appropriate Twitch query
         var sr *twitchapi.StreamsResponse
         if filter.QueryType == database.QueryTypeStreams {
             sr = twitchapi.AllStreams(filter.QueryParam)
         } else if filter.QueryType == database.QueryTypeFollows {
             sr = twitchapi.FollowedStreams(filter.QueryParam)
         }
+        // Assimilate all recieved streams into our tagged stream map
         for _, s := range sr.Streams {
             id := s.Channel.Id
-            if _, seen := uniqueStreams[id]; !seen { // Idiom to check if in map
-                uniqueStreams[id] = s
+            if _, seen := taggedStreams[id]; !seen { // Idiom to check if in map
+                taggedStreams[id] = &taggedStream{Stream:s}
             }
+            taggedStreams[id].AppendFilter(filter.ID)
         }
     }
 
-    // For each stream, save a snapshot to the DB
-    for _, stream := range uniqueStreams {
+    // For each (stream, filters) pair, grab and save a snapshot to the DB
+    for _, sf := range taggedStreams {
+        stream := sf.Stream
         channelName := stream.Channel.Display_name
         status := stream.Channel.Status
-        fmt.Printf("%v: %v\n", channelName, status)
+        fmt.Printf("(%v) %v: %v\n", len(sf.FilterIds), channelName, status)
 
         // Query Twitch for the channel's most recent (current) archive video ID
         archive := twitchapi.ChannelRecentArchive(stream.Channel.Id)
@@ -113,15 +119,15 @@ func Update () {
         database.AddThumbToDB(
                 roundTime, stream.Channel.Name, stream.Channel.Display_name,
                 vodSeconds, vodID, imagePath, vodTime, stream.Channel.Status,
-                stream.Viewers)
+                stream.Viewers, sf.FilterIds)
     }
+
+    // Update filters times
+    database.UpdateAllFilters(roundTime)
 
     // Prune old streams from the DB
     // For all streams with created < cutoff, delete, and delete their thumbs
     //numDeleted := database.DeleteOldThumbs(roundTime)
-
-    // Regenerate the main webpage
-    webpage.BuildWebpage(roundTime)
 
     fmt.Printf("update finish\n")
     /*fmt.Printf("%v deleted\n", numDeleted)

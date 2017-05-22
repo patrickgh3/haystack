@@ -47,63 +47,72 @@ func (s FastCGIServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
         panic(err)
     }
     prefix := siteURL.Path
-    if strings.HasPrefix(r.URL.Path, prefix) {
-        r.URL.Path = path.Clean(r.URL.Path)
-        r.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
-    } else {
+    if !strings.HasPrefix(r.URL.Path, prefix) {
         fmt.Printf("URL not prefixed, nginx probably shouldnt have given us")
         w.WriteHeader(http.StatusBadGateway)
         return
     }
-
-    /*
-
-    Requests:
-
-    /                   Returns main browsing webpage
-    /stream?id=N        Returns <a><img></img></a> list of thumbs for stream X
-
-    */
+    subPath := path.Clean(r.URL.Path)
+    subPath = strings.TrimPrefix(r.URL.Path, prefix)
 
     // Handle the various application requests
-    vals := r.URL.Query()
-    if r.URL.Path == "/stream" {
-        // Parse id param as uint
-        sid, err := strconv.ParseUint(vals.Get("id"), 10, 64)
-        if err != nil {
-            w.WriteHeader(http.StatusBadRequest)
-            fmt.Printf("Bad stream ID\n")
+    if subPath == "/" {
+        ServeRootPage(w, r)
+    } else if subPath == "/stream" {
+        ServeStreamRequest(w, r)
+    } else {
+        // Try serving filter page
+        f := database.GetFilterWithSubpath(strings.ToLower(subPath[1:len(subPath)]))
+        if f != nil {
+            ServeFilterPage(w, r, *f)
         } else {
-            streamId := uint(sid)
-            var td StreamResponseData
-            thumbs := database.GetStreamThumbs(streamId)
+            // If URL not otherwise handled, then 404
+            w.WriteHeader(http.StatusNotFound)
+        }
+    }
+}
 
-            for _, thumb := range thumbs {
-                // Format time like "15h04m05s"
-                timeStr := time.Duration(
-                        time.Duration(thumb.VODSeconds)*time.Second).String()
-                linkUrl := ""
-                hasVOD := len(thumb.VOD) > 0
-                if hasVOD {
-                    linkUrl = twitchVodBaseUrl+thumb.VOD+"?t="+timeStr
-                }
-                td.Thumbs = append(td.Thumbs, StreamResponseThumb{
-                        LinkUrl:linkUrl,
-                        ImageUrl:config.Path.SiteUrl+thumb.ImagePath,
-                        HasVOD:hasVOD})
+// ServeStreamRequest serves a series of <a><img></a> tags for thumbs of a
+// specified stream.
+func ServeStreamRequest(w http.ResponseWriter, r *http.Request) {
+    // Parse id param as uint
+    vals := r.URL.Query()
+    sid, err := strconv.ParseUint(vals.Get("id"), 10, 64)
+    if err != nil {
+        w.WriteHeader(http.StatusBadRequest)
+        fmt.Printf("Bad stream ID\n")
+    } else {
+        streamId := uint(sid)
+        // Generate data for template
+        var td StreamResponseData
+        thumbs := database.GetStreamThumbs(streamId)
+        for _, thumb := range thumbs {
+            // Format time like "15h04m05s"
+            timeStr := time.Duration(
+                    time.Duration(thumb.VODSeconds)*time.Second).String()
+            linkUrl := ""
+            hasVOD := len(thumb.VOD) > 0
+            if hasVOD {
+                linkUrl = twitchVodBaseUrl+thumb.VOD+"?t="+timeStr
             }
-
-            // Fill thumbs into response HTML
-            streamTemplate.Execute(w, td)
-            // Disable client-side caching
-            w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-            w.Header().Set("Pragma", "no-cache")
-            w.Header().Set("Expries", "0")
+            td.Thumbs = append(td.Thumbs, StreamResponseThumb{
+                    LinkUrl:linkUrl,
+                    ImageUrl:config.Path.SiteUrl+thumb.ImagePath,
+                    HasVOD:hasVOD})
         }
 
-    } else {
-        w.WriteHeader(http.StatusNotFound)
+        // Fill thumbs into response HTML
+        streamTemplate.Execute(w, td)
+        // Disable client-side caching
+        w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+        w.Header().Set("Pragma", "no-cache")
+        w.Header().Set("Expries", "0")
     }
+}
+
+// ServeRootPage serves a page listing all filters.
+func ServeRootPage(w http.ResponseWriter, r *http.Request) {
+    // TODO
 }
 
 // Serve starts the web server.

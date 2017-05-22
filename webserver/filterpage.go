@@ -1,11 +1,10 @@
-package webpage
+package webserver
 
 import (
     "html/template"
-    "os"
-    "bufio"
     "time"
     "sort"
+    "net/http"
     "github.com/kardianos/osext"
     "github.com/patrickgh3/haystack/config"
     "github.com/patrickgh3/haystack/database"
@@ -63,13 +62,16 @@ func truncateString (s string) string {
     return s
 }
 
-// BuildWebpage generates an HTML page with up-to-date thumbnail content.
-func BuildWebpage (roundTime time.Time) {
+// ServeFilterPage serves a page listing all streams of a filter.
+func ServeFilterPage(w http.ResponseWriter, r *http.Request,
+        f database.Filter) {
+    roundTime := f.LastUpdateTime
     var wpd WebpageData
     wpd.AppBaseUrl = config.Path.SiteUrl
 
-    // Grab all streams from the DB
-    streams := database.GetAllStreams()
+    // Grab filter's streams from the DB
+    streams := database.GetStreamsOfFilter(f.ID)
+    //streams := database.GetAllStreams()
 
     // Group streams by day into a Time -> []Stream map
     streamGroups := make(map[time.Time][]database.Stream)
@@ -130,16 +132,8 @@ func BuildWebpage (roundTime time.Time) {
         wpd.PanelGroups = append(wpd.PanelGroups, panelgroup)
     }
 
-    // Write to html file
-    f, err := os.Create(config.Path.Root + "/index.html")
-    defer f.Close()
-    if err != nil {
-        panic(err)
-    }
-
-    w := bufio.NewWriter(f)
+    // Execute template to HTTP response
     templ.Execute(w, wpd)
-    w.Flush()
 }
 
 // PanelOfStream generates a StreamPanel based on a stream
