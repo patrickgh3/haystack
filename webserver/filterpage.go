@@ -1,30 +1,25 @@
 package webserver
 
 import (
-    "html/template"
     "time"
     "sort"
+    "fmt"
     "net/http"
-    "github.com/kardianos/osext"
     "github.com/patrickgh3/haystack/config"
     "github.com/patrickgh3/haystack/database"
 )
 
-const indexFilepath = "templates/index.html"
 const groupTimeFormat = "Monday 2006-01-02"
 
-var templ *template.Template
-
 type WebpageData struct {
+    Title string
     AppBaseUrl string
     PanelGroups []PanelGroup
 }
-
 type PanelGroup struct {
     StreamPanels []StreamPanel
     Title string
 }
-
 type StreamPanel struct {
     StreamID uint
     ChannelDisplayName string
@@ -32,34 +27,7 @@ type StreamPanel struct {
     Title string
     Live bool
     Viewers int
-}
-
-// Times implements sort.Interface
-type Times []time.Time
-func (t Times) Len() int { return len(t) }
-func (t Times) Swap(i, j int) { t[i], t[j] = t[j], t[i] }
-func (t Times) Less(i, j int) bool { return t[i].Before(t[j]) }
-
-// ByViewers implements sort.Interface
-type ByViewers []StreamPanel
-func (t ByViewers) Len() int { return len(t) }
-func (t ByViewers) Swap(i, j int) { t[i], t[j] = t[j], t[i] }
-func (t ByViewers) Less(i, j int) bool { return t[i].Viewers > t[j].Viewers }
-
-func InitTemplate () {
-    ef, err := osext.ExecutableFolder()
-    if err != nil {
-        panic(err)
-    }
-    templ = template.Must(template.ParseFiles(ef + "/" + indexFilepath))
-}
-
-func truncateString (s string) string {
-    maxLength := 24
-    if len(s) > maxLength {
-        s = s[:maxLength-3] + "..."
-    }
-    return s
+    Length string
 }
 
 // ServeFilterPage serves a page listing all streams of a filter.
@@ -68,10 +36,10 @@ func ServeFilterPage(w http.ResponseWriter, r *http.Request,
     roundTime := f.LastUpdateTime
     var wpd WebpageData
     wpd.AppBaseUrl = config.Path.SiteUrl
+    wpd.Title = f.Name
 
     // Grab filter's streams from the DB
     streams := database.GetStreamsOfFilter(f.ID)
-    //streams := database.GetAllStreams()
 
     // Group streams by day into a Time -> []Stream map
     streamGroups := make(map[time.Time][]database.Stream)
@@ -133,14 +101,17 @@ func ServeFilterPage(w http.ResponseWriter, r *http.Request,
     }
 
     // Execute template to HTTP response
-    templ.Execute(w, wpd)
+    filterTempl.Execute(w, wpd)
 }
 
 // PanelOfStream generates a StreamPanel based on a stream
 func PanelOfStream(stream database.Stream) StreamPanel {
+    dur := time.Duration(stream.NumThumbs) * config.Timing.Period
+    lengthStr := fmt.Sprintf("%d:%02d", int(dur.Hours()), int(dur.Minutes()))
+
     panel := StreamPanel{ChannelDisplayName:stream.ChannelDisplayName,
             Title:stream.Title, StreamID:stream.ID,
-            Viewers:int(stream.AverageViewers)}
+            Viewers:int(stream.AverageViewers), Length:lengthStr}
 
     // Grab 4 representative images from the stream for its panel
     // [----|--------|--------|--------|----] where | are chosen images
@@ -161,3 +132,22 @@ func PanelOfStream(stream database.Stream) StreamPanel {
     return panel
 }
 
+func truncateString (s string) string {
+    maxLength := 24
+    if len(s) > maxLength {
+        s = s[:maxLength-3] + "..."
+    }
+    return s
+}
+
+// Times implements sort.Interface
+type Times []time.Time
+func (t Times) Len() int { return len(t) }
+func (t Times) Swap(i, j int) { t[i], t[j] = t[j], t[i] }
+func (t Times) Less(i, j int) bool { return t[i].Before(t[j]) }
+
+// ByViewers implements sort.Interface
+type ByViewers []StreamPanel
+func (t ByViewers) Len() int { return len(t) }
+func (t ByViewers) Swap(i, j int) { t[i], t[j] = t[j], t[i] }
+func (t ByViewers) Less(i, j int) bool { return t[i].Viewers > t[j].Viewers }

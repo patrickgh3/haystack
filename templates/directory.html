@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Haystack</title>
+        <link rel="stylesheet" type="text/css" href="{{.AppBaseUrl}}/theme.css">
+    </head>
+    <body>
+        <div id="header">
+            <h1><a href="{{.AppBaseUrl}}">Haystack</a></h1>
+            <h2>Catch up on recent livestreams</h2>
+            <h3>{{.Title}}</h3>
+        </div>
+        <div id="content">
+            <div id="directory">
+{{range .Links}}
+                <a href="{{.Link}}">{{.Name}}</a><br>
+{{end}}
+            </div>
+        </div>
+    </body>
+</html>

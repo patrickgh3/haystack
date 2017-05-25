@@ -10,31 +10,27 @@ import (
     "path"
     "html/template"
     "strconv"
-    "time"
-    "io"
+    "github.com/kardianos/osext"
     "github.com/patrickgh3/haystack/config"
     "github.com/patrickgh3/haystack/database"
 )
 
-var streamTemplate = template.Must(template.New("streamTemplate").Parse(
-`{{range .Thumbs}}
-<a {{if .HasVOD}}href="{{.LinkUrl}}"{{else}}class="novodlink"{{end}} target="_blank">
-    <img src="{{.ImageUrl}}" onmousemove="magnify(this, true)" onmouseout="unmagnify()">
-</a>
-{{end}}
-`))
+const filterFilepath = "templates/filter.html"
+var filterTempl *template.Template
+const directoryFilepath = "templates/directory.html"
+var directoryTempl *template.Template
 
-type StreamResponseData struct {
-    Thumbs []StreamResponseThumb
+// InitTemplates initializes page templates from the included files
+func InitTemplates() {
+    ef, err := osext.ExecutableFolder()
+    if err != nil {
+        panic(err)
+    }
+    filterTempl = template.Must(
+            template.ParseFiles(ef + "/" + filterFilepath))
+    directoryTempl = template.Must(
+            template.ParseFiles(ef + "/" + directoryFilepath))
 }
-
-type StreamResponseThumb struct {
-    LinkUrl string
-    ImageUrl string
-    HasVOD bool
-}
-
-const twitchVodBaseUrl = "https://www.twitch.tv/videos/"
 
 type FastCGIServer struct{}
 
@@ -42,28 +38,32 @@ type FastCGIServer struct{}
 func (s FastCGIServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     fmt.Printf("got request: %v\n", r.URL.Path)
 
-    // Strip app root url prefix from url, and clean it
+    // Grab path prefix from config site url and clean
     siteURL, err := url.Parse(config.Path.SiteUrl)
     if err != nil {
         panic(err)
     }
-    prefix := siteURL.Path
-    if !strings.HasPrefix(r.URL.Path, prefix) {
+    prefix := path.Clean(siteURL.Path)
+
+    // Trim prefix from request path and clean
+    reqPath := path.Clean(r.URL.Path)
+    if !strings.HasPrefix(reqPath, prefix) {
         fmt.Printf("URL not prefixed, nginx probably shouldnt have given us")
         w.WriteHeader(http.StatusBadGateway)
         return
     }
-    subPath := path.Clean(r.URL.Path)
-    subPath = strings.TrimPrefix(r.URL.Path, prefix)
+    subPath := strings.TrimPrefix(reqPath, prefix)
+    subPath = path.Clean(subPath)
 
     // Handle the various application requests
-    if subPath == "/" {
+    if subPath == "." {
         ServeRootPage(w, r)
     } else if subPath == "/stream" {
         ServeStreamRequest(w, r)
     } else {
         // Try serving filter page
-        f := database.GetFilterWithSubpath(strings.ToLower(subPath[1:len(subPath)]))
+        filterPath := strings.ToLower(subPath[1:len(subPath)])
+        f := database.GetFilterWithSubpath(filterPath)
         if f != nil {
             ServeFilterPage(w, r, *f)
         } else {
@@ -73,54 +73,7 @@ func (s FastCGIServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     }
 }
 
-// ServeStreamRequest serves a series of <a><img></a> tags for thumbs of a
-// specified stream.
-func ServeStreamRequest(w http.ResponseWriter, r *http.Request) {
-    // Parse id param as uint
-    vals := r.URL.Query()
-    sid, err := strconv.ParseUint(vals.Get("id"), 10, 64)
-    if err != nil {
-        w.WriteHeader(http.StatusBadRequest)
-        fmt.Printf("Bad stream ID\n")
-    } else {
-        streamId := uint(sid)
-        // Generate data for template
-        var td StreamResponseData
-        thumbs := database.GetStreamThumbs(streamId)
-        for _, thumb := range thumbs {
-            // Format time like "15h04m05s"
-            timeStr := time.Duration(
-                    time.Duration(thumb.VODSeconds)*time.Second).String()
-            linkUrl := ""
-            hasVOD := len(thumb.VOD) > 0
-            if hasVOD {
-                linkUrl = twitchVodBaseUrl+thumb.VOD+"?t="+timeStr
-            }
-            td.Thumbs = append(td.Thumbs, StreamResponseThumb{
-                    LinkUrl:linkUrl,
-                    ImageUrl:config.Path.SiteUrl+thumb.ImagePath,
-                    HasVOD:hasVOD})
-        }
-
-        // Fill thumbs into response HTML
-        streamTemplate.Execute(w, td)
-        // Disable client-side caching
-        w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-        w.Header().Set("Pragma", "no-cache")
-        w.Header().Set("Expries", "0")
-    }
-}
-
-// ServeRootPage serves a page listing all filters.
-func ServeRootPage(w http.ResponseWriter, r *http.Request) {
-    // TODO
-    filters := database.GetAllFilters()
-    for _, filter := range filters {
-        io.WriteString(w, fmt.Sprintf("%v: %v<br>", filter.Name, filter.Subpath))
-    }
-}
-
-// Serve starts the web server.
+// Serve starts the web server and blocks.
 func Serve() {
     fmt.Printf("Starting server...\n")
     l, _ := net.Listen("tcp", config.WebServer.IP+":"+

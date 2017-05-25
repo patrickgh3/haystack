@@ -17,7 +17,7 @@ func main () {
     // Initialize database
     database.InitDB()
     // Set up webpage stuff
-    webserver.InitTemplate()
+    webserver.InitTemplates()
 
     // Start web server to handle HTTP requets
     go webserver.Serve()
@@ -134,9 +134,6 @@ func Update () {
     //     Total of streams NumThumbs != # thumbs
     // Image files whose thumb no longer exists
     //     # image files != # thumbs
-
-    //check for stray images (don't have a thumb),
-    // thumbs (don't have a stream), follows (don't have a stream)
 
     fmt.Printf("update finish\n")
     /*fmt.Printf("%v deleted\n", numDeleted)
