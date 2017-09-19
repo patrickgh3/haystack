@@ -42,7 +42,7 @@ body { background-color:#111; color:#ddd; letter-spacing:0.02em;
                text-align:right; font-size:1.17em; }
     .length { position:absolute; top:0.25em; right:0.5em;
                text-align:right; font-size:1.17em; padding:0 0.25em; 
-               background-color:rgba(0, 0, 0, 0.5); }
+               background-color:rgba(0, 0, 0, 0.7); }
     .coverimages { width:100%; }
         .coverimages img { display:inline-block; width:50%;
                            vertical-align:bottom; }

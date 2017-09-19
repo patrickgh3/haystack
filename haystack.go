@@ -4,6 +4,9 @@ import (
     "time"
     "strconv"
     "fmt"
+    "os"
+    "bufio"
+    "path"
     "github.com/patrickgh3/haystack/config"
     "github.com/patrickgh3/haystack/database"
     "github.com/patrickgh3/haystack/twitchapi"
@@ -125,6 +128,23 @@ func Update () {
 
     // Delete old streams (and their thumbs, follows, image files) from the DB
     database.PruneOldStreams(roundTime)
+
+    // Regenerate all filter pages
+    for _, filter := range filters {
+        dir := path.Join(config.Path.Root, filter.Subpath)
+        err := os.Mkdir(dir, os.ModePerm)
+        if err != nil && !os.IsExist(err) {
+            panic(err)
+        }
+        f, err := os.Create(path.Join(dir, "index.html"))
+        defer f.Close()
+        if err != nil {
+            panic(err)
+        }
+        w := bufio.NewWriter(f)
+        webserver.ServeFilterPage(w, filter)
+        w.Flush()
+    }
 
     // TODO: Occasionally check for "stray" data:
     // (Also perform this check on app startup)

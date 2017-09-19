@@ -1,14 +1,15 @@
 Make the code a joy to work on.
 
-Multiple channel group pages (fangames, Patrick, Klazen)
-Display multiple titles (if 3 or less)
-
+Check stray data
+Caching - server and client side - https://serversforhackers.com/nginx-caching
 Error handing (!)
+    Retry and back off
 Logging (!)
-Javascript timezone markers (+ fallback?)
-Stats (unique channels in db, thumbs in db, last generated date)
 Unicode stream titles and usernames
-State OAuth2 parameter
+Mozilla SSL config
+Parallelize updates? might not be worth it
 
-Handle error in CurrRowStruct() parsing date string "" (bad data in DB somehow)
 Frontend - Page starts blank with buttons you can click to load haystacks
+Display multiple titles (if 3 or less)
+Stats (unique channels in db, thumbs in db, last generated date)
+State OAuth2 parameter

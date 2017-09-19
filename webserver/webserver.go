@@ -12,7 +12,7 @@ import (
     "strconv"
     "github.com/kardianos/osext"
     "github.com/patrickgh3/haystack/config"
-    "github.com/patrickgh3/haystack/database"
+    //"github.com/patrickgh3/haystack/database"
 )
 
 const filterFilepath = "templates/filter.html"
@@ -61,7 +61,9 @@ func (s FastCGIServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     } else if subPath == "/stream" {
         ServeStreamRequest(w, r)
     } else {
-        // Try serving filter page
+        w.WriteHeader(http.StatusNotFound)
+    }
+    /*    // Try serving filter page
         filterPath := strings.ToLower(subPath[1:len(subPath)])
         f := database.GetFilterWithSubpath(filterPath)
         if f != nil {
@@ -70,7 +72,7 @@ func (s FastCGIServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
             // If URL not otherwise handled, then 404
             w.WriteHeader(http.StatusNotFound)
         }
-    }
+    }*/
 }
 
 // Serve starts the web server and blocks.

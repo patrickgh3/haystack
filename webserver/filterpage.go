@@ -4,7 +4,8 @@ import (
     "time"
     "sort"
     "fmt"
-    "net/http"
+    "math"
+    "io"
     "github.com/patrickgh3/haystack/config"
     "github.com/patrickgh3/haystack/database"
 )
@@ -31,8 +32,7 @@ type StreamPanel struct {
 }
 
 // ServeFilterPage serves a page listing all streams of a filter.
-func ServeFilterPage(w http.ResponseWriter, r *http.Request,
-        f database.Filter) {
+func ServeFilterPage(w io.Writer, f database.Filter) {
     roundTime := f.LastUpdateTime
     var wpd WebpageData
     wpd.AppBaseUrl = config.Path.SiteUrl
@@ -107,7 +107,8 @@ func ServeFilterPage(w http.ResponseWriter, r *http.Request,
 // PanelOfStream generates a StreamPanel based on a stream
 func PanelOfStream(stream database.Stream) StreamPanel {
     dur := time.Duration(stream.NumThumbs) * config.Timing.Period
-    lengthStr := fmt.Sprintf("%d:%02d", int(dur.Hours()), int(dur.Minutes()))
+    mins := int(math.Mod(float64(dur.Minutes()), 60))
+    lengthStr := fmt.Sprintf("%d:%02d", int(dur.Hours()), mins)
 
     panel := StreamPanel{ChannelDisplayName:stream.ChannelDisplayName,
             Title:stream.Title, StreamID:stream.ID,
