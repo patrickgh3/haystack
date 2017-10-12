@@ -1,3 +1,24 @@
+Overhaul interface.
+Add option to show only streams with > 20 average viewers.
+Place bookmark at the last read point - time determined by cookie.
+
+Fix mouse hover on Firefox.
+Write What Is This and How Does It Work texts.
+Design logo.
+
+
+
+
+
+
+
+
+
+
+
+
+Old:
+
 Make the code a joy to work on.
 
 Check stray data
