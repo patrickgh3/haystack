@@ -1,0 +1,14 @@
+* { margin:none; padding:none; }
+body { letter-spacing:0.02em;
+    font-family:"Helvetica Neue", "Calibri Light", Roboto, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale; }
+
+#wrapper { margin:0 auto; width:1150px; max-width:100%; }
+ul { line-height:2em; list-style:none; padding-left:0; }
+.cell { display:inline-block; text-overflow:ellipsis; white-space:nowrap; 
+    overflow:hidden; vertical-align:top; } /* Fuck CSS */
+.live    { width:5em; color:#CA0321; }
+.viewers { width:5em; text-align:right; }
+.channel { width:7em; margin-left:3em; }
+.title   { }

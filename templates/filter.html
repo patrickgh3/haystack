@@ -1,45 +1,35 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Haystack - {{.Title}}</title>
-        <link rel="stylesheet" type="text/css" href="{{.AppBaseUrl}}/theme.css">
-        <script type="text/javascript">
-            haystackBaseUrl = {{.AppBaseUrl}};
-        </script>
-        <script type="text/javascript" src="{{.AppBaseUrl}}/js/scrubber.js"></script>
-        <script type="text/javascript" src="{{.AppBaseUrl}}/js/magnify.js"></script>
-    </head>
-    <body>
-        <div id="header">
-            <h1><a href="{{.AppBaseUrl}}">Haystack</a></h1>
-            <h2>Catch up on recent livestreams</h2>
-            <h3>{{.Title}}</h3>
-            <noscript>
-                This page requires Javascript to be enabled for full functionality.
-            </noscript>
-        </div>
-        <div id="content">
-            <div id="scrubber"></div>
-            <div id="magnifier"><img></div>
-{{range .PanelGroups}}
-            <div class="panelgroup">
-            <h1>{{.Title}}</h1>
-{{range .StreamPanels}}
-                <div class="streampanel deselected {{if .Live}}livepanel{{end}}" onClick="selectPanel(this)"
-                data-clicked="" data-streamid="{{.StreamID}}" data-scrubberhtml="">
-                    <div class="streampanelhighlight"></div>
-                    <div class="coverimages">
-                        <img src="{{index .CoverImages 0}}"><img src="{{index .CoverImages 1}}"><img src="{{index .CoverImages 2}}"><img src="{{index .CoverImages 3}}">
-                    </div>
-                    <span style="clear:both;"/>
-                    <h3>{{.Title}}</h3>
-                    <h3>{{.ChannelDisplayName}}</h3>
-                    <span class="viewers">{{if .Live}}Live {{end}}<img src="images/viewers.png"> {{.Viewers}}</span>
-                    <span class="length">{{.Length}}</span>
-                </div>
-{{end}}
-            </div>
-{{end}}
-        </div>
-    </body>
+  <head>
+    <title>Haystack - {{.Title}}</title>
+    <link rel="stylesheet" type="text/css" href="{{.AppBaseUrl}}/style.css">
+    <!--<script type="text/javascript">
+      haystackBaseUrl = {{.AppBaseUrl}};
+    </script>
+    <script type="text/javascript" src="{{.AppBaseUrl}}/js/scrubber.js"></script>
+    <script type="text/javascript" src="{{.AppBaseUrl}}/js/magnify.js"></script>-->
+  </head>
+  <body>
+    <div id="wrapper">
+      <h1>Haystack</h1>
+      <h2>Never miss a stream</h2>
+      <h2>{{.Title}}</h2>
+
+      <!--<div id="scrubber"></div>
+      <div id="magnifier"><img></div>-->
+
+      <ul>
+  {{range .PanelGroups}}
+        <li>{{.Title}}</li>
+  {{range .StreamPanels}}
+        <li>
+          <a>
+            <div class="live cell">{{if .Live}}Live{{end}}</div><div class="viewers cell">{{.Viewers}}</div><div class="channel cell">{{.ChannelDisplayName}}</div><div class="title cell">{{.Title}}</div>
+          </a>
+        </li>
+  {{end}}
+  {{end}}
+      </ul>
+    </div>
+  </body>
 </html>

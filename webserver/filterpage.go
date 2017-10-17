@@ -31,8 +31,12 @@ type StreamPanel struct {
     Length string
 }
 
-// ServeFilterPage serves a page listing all streams of a filter.
-func ServeFilterPage(w io.Writer, f database.Filter) {
+func WriteFilterPage(w io.Writer, wpd WebpageData) {
+    filterTempl.Execute(w, wpd)
+}
+
+// FilterPageData generates a struct listing all streams of a filter.
+func FilterPageData(f database.Filter) WebpageData {
     roundTime := f.LastUpdateTime
     var wpd WebpageData
     wpd.AppBaseUrl = config.Path.SiteUrl
@@ -100,8 +104,7 @@ func ServeFilterPage(w io.Writer, f database.Filter) {
         wpd.PanelGroups = append(wpd.PanelGroups, panelgroup)
     }
 
-    // Execute template to HTTP response
-    filterTempl.Execute(w, wpd)
+    return wpd
 }
 
 // PanelOfStream generates a StreamPanel based on a stream

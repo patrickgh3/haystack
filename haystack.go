@@ -22,11 +22,36 @@ func main () {
     // Set up webpage stuff
     webserver.InitTemplates()
 
+    fmt.Print("Debug regenerating filters pages...")
+    RegenerateFilterPages()
+    fmt.Print("Done\n")
+
     // Start web server to handle HTTP requets
-    go webserver.Serve()
+    //go webserver.Serve()
 
     // Start tracking streams
-    TrackStreams()
+    //TrackStreams()
+}
+
+func RegenerateFilterPages() {
+    filters := database.GetAllFilters()
+    for _, filter := range filters {
+        wpd := webserver.FilterPageData(filter)
+
+        dir := path.Join(config.Path.Root, filter.Subpath)
+        err := os.Mkdir(dir, os.ModePerm)
+        if err != nil && !os.IsExist(err) {
+            panic(err)
+        }
+        f, err := os.Create(path.Join(dir, "index.html"))
+        defer f.Close()
+        if err != nil {
+            panic(err)
+        }
+        w := bufio.NewWriter(f)
+        webserver.WriteFilterPage(w, wpd)
+        w.Flush()
+    }
 }
 
 // TrackStreams blocks and periodically grabs stream data from Twitch.
@@ -129,22 +154,7 @@ func Update () {
     // Delete old streams (and their thumbs, follows, image files) from the DB
     database.PruneOldStreams(roundTime)
 
-    // Regenerate all filter pages
-    for _, filter := range filters {
-        dir := path.Join(config.Path.Root, filter.Subpath)
-        err := os.Mkdir(dir, os.ModePerm)
-        if err != nil && !os.IsExist(err) {
-            panic(err)
-        }
-        f, err := os.Create(path.Join(dir, "index.html"))
-        defer f.Close()
-        if err != nil {
-            panic(err)
-        }
-        w := bufio.NewWriter(f)
-        webserver.ServeFilterPage(w, filter)
-        w.Flush()
-    }
+    RegenerateFilterPages()
 
     // TODO: Occasionally check for "stray" data:
     // (Also perform this check on app startup)
