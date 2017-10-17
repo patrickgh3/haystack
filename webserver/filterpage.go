@@ -24,6 +24,7 @@ type PanelGroup struct {
 type StreamPanel struct {
     StreamID uint
     ChannelDisplayName string
+    ChannelName string
     CoverImages []string
     Title string
     Live bool
@@ -114,6 +115,7 @@ func PanelOfStream(stream database.Stream) StreamPanel {
     lengthStr := fmt.Sprintf("%d:%02d", int(dur.Hours()), mins)
 
     panel := StreamPanel{ChannelDisplayName:stream.ChannelDisplayName,
+            ChannelName:stream.ChannelName,
             Title:stream.Title, StreamID:stream.ID,
             Viewers:int(stream.AverageViewers), Length:lengthStr}
 

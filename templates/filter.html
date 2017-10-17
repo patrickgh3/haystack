@@ -10,22 +10,26 @@
     <script type="text/javascript" src="{{.AppBaseUrl}}/js/magnify.js"></script>-->
   </head>
   <body>
-    <div id="wrapper">
-      <h1>Haystack</h1>
-      <h2>Never miss a stream</h2>
-      <h2>{{.Title}}</h2>
+    <div id="container">
+      <div id="logo">
+        <h1>Haystack</h1>
+        <h3>Recap Twitch streams</h3>
+      </div>
 
       <!--<div id="scrubber"></div>
       <div id="magnifier"><img></div>-->
+
+      <div id="toprow">
+        <div class="toplive cell"></div><div class="topviewers cell">Avg. Viewers</div><div class="topchannel cell"></div><div class="toptitle cell"></div>
+      </div>
 
       <ul>
   {{range .PanelGroups}}
         <li>{{.Title}}</li>
   {{range .StreamPanels}}
         <li>
-          <a>
-            <div class="live cell">{{if .Live}}Live{{end}}</div><div class="viewers cell">{{.Viewers}}</div><div class="channel cell">{{.ChannelDisplayName}}</div><div class="title cell">{{.Title}}</div>
-          </a>
+          <!-- Whitespace removed because spaces were appearing between cells -->
+          <a href="https://go.twitch.tv/{{.ChannelName}}"><div class="live cell">{{if .Live}}&#9679; Live{{end}}</div></a><a onClick="alert('todo');" title="{{.Title}}"><div class="viewers cell">{{.Viewers}}</div><div class="channel cell">{{.ChannelDisplayName}}</div><div class="title cell">{{.Title}}</div></a>
         </li>
   {{end}}
   {{end}}

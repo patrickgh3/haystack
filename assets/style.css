@@ -1,14 +1,32 @@
-* { margin:none; padding:none; }
-body { letter-spacing:0.02em;
-    font-family:"Helvetica Neue", "Calibri Light", Roboto, sans-serif;
+* { margin:0; padding:0; }
+body {
+    /*font-family:"Helvetica Neue", "Calibri Light", Roboto, sans-serif;*/
+    font-family:"Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Verdana, Tahoma, sans-serif;
     -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale; }
+    -moz-osx-font-smoothing:grayscale; 
+    font-size:90%; }
 
-#wrapper { margin:0 auto; width:1150px; max-width:100%; }
+#container { margin:0 auto; width:1150px; max-width:100%; }
+
+#logo { margin-top: 1.5em; }
+#logo h1 { font-weight:normal; margin:0; line-height:100%; }
+#logo h3 { font-weight:normal; margin:0; line-height:100%; }
+
+#toprow { margin-top:2em; }
+.toplive    { font-size:0.75em; width:6.66em; text-align:right; }
+.topviewers { font-size:0.75em; width:6.66em; text-align:right; }
+.topchannel { font-size:0.75em; width:9.33em; margin-left:4em; }
+.toptitle   { font-size:0.75em; margin-left:4em; }
+
 ul { line-height:2em; list-style:none; padding-left:0; }
+
 .cell { display:inline-block; text-overflow:ellipsis; white-space:nowrap; 
     overflow:hidden; vertical-align:top; } /* Fuck CSS */
-.live    { width:5em; color:#CA0321; }
+
+.live    { width:5em; color:#CA0321; text-align:center; }
 .viewers { width:5em; text-align:right; }
 .channel { width:7em; margin-left:3em; }
-.title   { }
+.title   { margin-left:3em; width:40em; }
+
+li a { display:inline-block; }
+li a:hover { background-color:#ddd; cursor:pointer; }
