@@ -30,6 +30,8 @@ type StreamPanel struct {
     Live bool
     Viewers int
     Length string
+    OriginalIndex int
+    FilterTop10 bool
 }
 
 func WriteFilterPage(w io.Writer, wpd WebpageData) {
@@ -72,35 +74,30 @@ func FilterPageData(f database.Filter) WebpageData {
         // For each stream, create a stream panel and put it into either
         // live or not live array
         groupStreams := streamGroups[groupTime]
-        var livePanels []StreamPanel
-        var notlivePanels []StreamPanel
+        var panels []StreamPanel
 
-        for _, stream := range groupStreams {
+        for i, stream := range groupStreams {
             // Create panel for this stream
-            panel := PanelOfStream(stream)
+            panel := PanelOfStream(stream, i)
             // Determine whether this stream is considered Live or not and
             // add it to the appropriate list
             cutoff := roundTime.Add(-config.Timing.CutoffLeeway)
-            if stream.LastUpdateTime.After(cutoff) ||
-                    stream.LastUpdateTime.Equal(cutoff) {
-                panel.Live = true
-                livePanels = append(livePanels, panel)
-            } else {
-                panel.Live = false
-                notlivePanels = append(notlivePanels, panel)
-            }
+            panel.Live = stream.LastUpdateTime.After(cutoff) ||
+                    stream.LastUpdateTime.Equal(cutoff)
+            panels = append(panels, panel)
         }
-        // Sort live and not live individually by viewer count
-        sort.Sort(ByViewers(livePanels))
-        sort.Sort(ByViewers(notlivePanels))
 
-        // Add Live then Not Live to the actual group
-        for _, panel := range livePanels {
-            panelgroup.StreamPanels = append(panelgroup.StreamPanels, panel)
+        // Copy and sort panels by viewers
+        panelsSorted := make([]StreamPanel, len(panels))
+        copy(panelsSorted, panels)
+        sort.Sort(ByViewers(panelsSorted))
+
+        // Fill in filter booleans
+        for i, p := range panelsSorted {
+            panels[p.OriginalIndex].FilterTop10 = i <= 10
         }
-        for _, panel := range notlivePanels {
-            panelgroup.StreamPanels = append(panelgroup.StreamPanels, panel)
-        }
+
+        panelgroup.StreamPanels = panels
 
         wpd.PanelGroups = append(wpd.PanelGroups, panelgroup)
     }
@@ -109,7 +106,7 @@ func FilterPageData(f database.Filter) WebpageData {
 }
 
 // PanelOfStream generates a StreamPanel based on a stream
-func PanelOfStream(stream database.Stream) StreamPanel {
+func PanelOfStream(stream database.Stream, index int) StreamPanel {
     dur := time.Duration(stream.NumThumbs) * config.Timing.Period
     mins := int(math.Mod(float64(dur.Minutes()), 60))
     lengthStr := fmt.Sprintf("%d:%02d", int(dur.Hours()), mins)
@@ -117,7 +114,8 @@ func PanelOfStream(stream database.Stream) StreamPanel {
     panel := StreamPanel{ChannelDisplayName:stream.ChannelDisplayName,
             ChannelName:stream.ChannelName,
             Title:stream.Title, StreamID:stream.ID,
-            Viewers:int(stream.AverageViewers), Length:lengthStr}
+            Viewers:int(stream.AverageViewers), Length:lengthStr,
+            OriginalIndex:index}
 
     // Grab 4 representative images from the stream for its panel
     // [----|--------|--------|--------|----] where | are chosen images

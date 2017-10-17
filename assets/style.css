@@ -12,11 +12,18 @@ body {
 #logo h1 { font-weight:normal; margin:0; line-height:100%; }
 #logo h3 { font-weight:normal; margin:0; line-height:100%; }
 
+/* Column labels and filters */
+
 #toprow { margin-top:2em; }
 .toplive    { font-size:0.75em; width:6.66em; text-align:right; }
 .topviewers { font-size:0.75em; width:6.66em; text-align:right; }
 .topchannel { font-size:0.75em; width:9.33em; margin-left:4em; }
 .toptitle   { font-size:0.75em; margin-left:4em; }
+
+#filter { float:right; }
+#filter select { width:7em; }
+
+/* Main list */
 
 ul { line-height:2em; list-style:none; padding-left:0; }
 

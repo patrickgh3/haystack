@@ -3,12 +3,6 @@
   <head>
     <title>Haystack - {{.Title}}</title>
     <link rel="stylesheet" type="text/css" href="{{.AppBaseUrl}}/style.css">
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script type="text/javascript">
-      haystackBaseUrl = {{.AppBaseUrl}};
-    </script>
-    <script type="text/javascript" src="{{.AppBaseUrl}}/js/filterpage.js"></script>
   </head>
   <body>
     <div id="container">
@@ -17,24 +11,34 @@
         <h3>Recap Twitch streams</h3>
       </div>
 
-      <!--<div id="scrubber"></div>
-      <div id="magnifier"><img></div>-->
-
       <div id="toprow">
         <div class="toplive cell"></div><div class="topviewers cell">Avg. Viewers</div><div class="topchannel cell"></div><div class="toptitle cell"></div>
+        <div id="filter">
+          Filter:
+          <select onChange="filterChanged(this);">
+            <option value="top10">Top 10</option>
+            <option value="all" selected="selected">All</option>
+          </select>
+        </div>
       </div>
 
-      <ul>
-  {{range .PanelGroups}}
-        <li>{{.Title}}</li>
-  {{range .StreamPanels}}
+      <ul id="streamList">
+{{range .PanelGroups}}
+        <li class="day">{{.Title}}</li>
+{{range .StreamPanels}}
         <li>
           <!-- Whitespace removed because spaces were appearing between cells -->
-          {{if .Live}}<a href="https://go.twitch.tv/{{.ChannelName}}"><div class="live cell">&#9679; Live</div></a>{{else}}<div class="live cell"></div>{{end}}<a onClick="streamClicked(this);" data-streamid="{{.StreamID}}" data-dirty="1" title="{{.Title}}"><div class="viewers cell">{{.Viewers}}</div><div class="channel cell">{{.ChannelDisplayName}}</div><div class="title cell">{{.Title}}</div></a>
+          {{if .Live}}<a href="https://go.twitch.tv/{{.ChannelName}}"><div class="live cell">&#9679; Live</div></a>{{else}}<div class="live cell"></div>{{end}}<a onClick="streamClicked(this);" data-streamid="{{.StreamID}}" data-dirty="1" {{if .FilterTop10}}data-filtertop10="1" {{end}}title="{{.Title}}"><div class="viewers cell">{{.Viewers}}</div><div class="channel cell">{{.ChannelDisplayName}}</div><div class="title cell">{{.Title}}</div></a>
         </li>
-  {{end}}
-  {{end}}
+{{end}}
+{{end}}
       </ul>
     </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript">
+      haystackBaseUrl = {{.AppBaseUrl}};
+    </script>
+    <script type="text/javascript" src="{{.AppBaseUrl}}/js/filterpage.js"></script>
   </body>
 </html>

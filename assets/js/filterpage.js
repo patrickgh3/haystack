@@ -33,7 +33,7 @@ function expandStream(streamElm) {
     if (streamElm.dataset.dirty) {
         streamElm.dataset.dirty = ""; // falsy
         streamElm.dataset.detailsContent = 'Loading...';
-        streamRequest(streamElm, 3, 200);
+        streamRequest(streamElm, 3, 300);
     }
 }
 
@@ -81,5 +81,34 @@ function updateSelectedDetails() {
     if (selectedStream != null) {
         selectedStream.nextElementSibling.innerHTML =
             selectedStream.dataset.detailsContent;
+    }
+}
+
+function filterChanged(selectElm) {
+    // Collapse selected stream.
+    if (selectedStream != null) {
+        selectedStream.nextElementSibling.remove();
+        selectedStream.classList.remove('selectedstream');
+        selectedStream = null;
+    }
+
+    var children = document.getElementById('streamList').children;
+    for (var i=0; i<children.length; i++) {
+        var s = children[i];
+        // Skip day spacers.
+        if (s.classList.contains('day')) {
+            continue;
+        }
+
+        var visible = true;
+        if (selectElm.value == 'top10') {
+            visible = s.children[1].dataset['filtertop10'];
+        }
+
+        if (visible) {
+            s.style.display = 'block';
+        } else {
+            s.style.display = 'none';
+        }
     }
 }
