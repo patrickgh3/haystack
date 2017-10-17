@@ -30,3 +30,7 @@ ul { line-height:2em; list-style:none; padding-left:0; }
 
 li a { display:inline-block; }
 li a:hover { background-color:#ddd; cursor:pointer; }
+.selectedstream { background-color:#bbb; }
+.selectedstream:hover { background-color:#bbb; }
+
+.streamdetails { margin-left:5em; } /* Height is set by JS */

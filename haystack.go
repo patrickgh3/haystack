@@ -27,7 +27,8 @@ func main () {
     fmt.Print("Done\n")
 
     // Start web server to handle HTTP requets
-    //go webserver.Serve()
+    // NOTE: removed "go"
+    webserver.Serve()
 
     // Start tracking streams
     //TrackStreams()
