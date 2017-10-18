@@ -10,7 +10,8 @@
     <div id="container">
       <div id="logo">
         <h1>Haystack</h1>
-        <h3>Recap Twitch streams</h3>
+        <h3>Never miss a missed stream.</h3>
+        <!-- Find all your missed Twitch content in one place. -->
       </div>
 
       <div id="toprow">
@@ -30,7 +31,7 @@
 {{range .StreamPanels}}
         <li>
           <!-- Whitespace removed because spaces were appearing between cells -->
-          {{if .Live}}<a href="https://go.twitch.tv/{{.ChannelName}}"><div class="live cell">&#9679; Live</div></a>{{else}}<div class="live cell"></div>{{end}}<a onClick="streamClicked(this);" data-streamid="{{.StreamID}}" data-dirty="1" {{if .FilterTop10}}data-filtertop10="1" {{end}}title="{{.Title}}"><div class="viewers cell">{{.Viewers}}</div><div class="channel cell">{{.ChannelDisplayName}}</div><div class="title cell">{{.Title}}</div></a>
+          {{if .Live}}<a href="https://go.twitch.tv/{{.ChannelName}}"><div class="live cell">&#9679; Live</div></a>{{else}}<div class="live cell"></div>{{end}}<a onClick="streamClicked(this);" data-streamid="{{.StreamID}}" data-dirty="1" {{if .FilterTop10}}data-filtertop10="1" {{end}}title="{{.Title}}"><div class="viewers cell">{{.Viewers}}</div><div class="channel cell">{{.ChannelDisplayName}}</div><div class="title cell">{{.Title}}</div><div class="length cell">{{.Length}}</div></a>
         </li>
 {{end}}
 {{end}}

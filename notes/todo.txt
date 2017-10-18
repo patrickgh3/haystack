@@ -1,11 +1,15 @@
-Overhaul interface.
-Add option to show only streams with > 20 average viewers.
-Place bookmark at the last read point - time determined by cookie.
-Show clips created during that stream.
+Filter by username. (Sudnep's suggestion)
 
-Fix mouse hover on Firefox.
 Write What Is This and How Does It Work texts.
 Design logo.
+
+Show clips created during that stream.
+Mobile view. (check hckrnews)
+
+
+
+Much later:
+Analytics
 
 
 

@@ -163,6 +163,12 @@ func GetStreamThumbs(streamId uint) []Thumb {
     return thumbs
 }
 
+func GetStreamByID(streamId uint) Stream {
+    var stream Stream
+    db.First(&stream, streamId)
+    return stream
+}
+
 func GetAllStreams() []Stream {
     var streams []Stream
     db.Find(&streams)
@@ -171,7 +177,8 @@ func GetAllStreams() []Stream {
 
 func GetStreamsOfFilter(filterId uint) []Stream {
     var streams []Stream
-    db.Joins("join follows on follows.stream_id = streams.id AND follows.filter_id = ?", filterId).Find(&streams)
+    db.Joins("join follows on follows.stream_id = streams.id AND follows.filter_id = ?", filterId).
+            Order("id desc").Find(&streams)
     return streams
 }
 

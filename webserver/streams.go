@@ -6,6 +6,7 @@ import (
     "net/http"
     "html/template"
     "strconv"
+    "math"
     "github.com/patrickgh3/haystack/config"
     "github.com/patrickgh3/haystack/database"
 )
@@ -13,6 +14,7 @@ import (
 const twitchVodBaseUrl = "https://www.twitch.tv/videos/"
 
 var streamTemplate = template.Must(template.New("streamTemplate").Parse(
+//`<div class="detailslength">{{.Length}}</div>
 `{{range .Thumbs}}
 <a {{if .HasVOD}}href="{{.LinkUrl}}"{{else}}class="novodlink"{{end}} target="_blank">
     <img src="{{.ImageUrl}}" onmousemove="magnify(event, this, true)" onmouseout="unmagnify()">
@@ -21,6 +23,7 @@ var streamTemplate = template.Must(template.New("streamTemplate").Parse(
 `))
 
 type StreamResponseData struct {
+    Length string
     Thumbs []StreamResponseThumb
 }
 type StreamResponseThumb struct {
@@ -42,6 +45,14 @@ func ServeStreamRequest(w http.ResponseWriter, r *http.Request) {
         streamId := uint(sid)
         // Generate data for template
         var td StreamResponseData
+
+        // Stream length
+        stream := database.GetStreamByID(streamId)
+        dur := time.Duration(stream.NumThumbs) * config.Timing.Period
+        mins := int(math.Mod(float64(dur.Minutes()), 60))
+        td.Length = fmt.Sprintf("%d:%02d", int(dur.Hours()), mins)
+
+        // Thumbs
         thumbs := database.GetStreamThumbs(streamId)
         for _, thumb := range thumbs {
             // Format time like "15h04m05s"

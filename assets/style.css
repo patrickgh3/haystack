@@ -33,7 +33,8 @@ ul { line-height:2em; list-style:none; padding-left:0; }
 .live    { width:5em; color:#CA0321; text-align:center; }
 .viewers { width:5em; text-align:right; }
 .channel { width:7em; margin-left:3em; }
-.title   { margin-left:3em; width:40em; }
+.length  { width:5em; text-align:right; margin-left:2em; }
+.title   { margin-left:3em; width:34em; }
 
 li a { display:inline-block; }
 li a:hover { background-color:#ddd; cursor:pointer; }
@@ -49,6 +50,7 @@ li a:hover { background-color:#ddd; cursor:pointer; }
 .streamdetails img { height:5em; width:auto; display:block; overflow:hidden;
     object-fit:cover; }
 .streamdetails img:hover { opacity:0.7; }
+.detailslength { width:5em; text-align:center; margin-top:1.5em; }
 
 #magnifier { position:absolute; visibility:hidden; z-index:1;
              background-size:contain; }
