@@ -10,7 +10,7 @@ import (
     "github.com/patrickgh3/haystack/database"
 )
 
-const groupTimeFormat = "Monday 2006-01-02"
+const groupTimeFormat = "Mon, Jan 02"
 
 type WebpageData struct {
     Title string
@@ -66,8 +66,10 @@ func FilterPageData(f database.Filter) WebpageData {
     // For each stream group, create a panel group
     for gi, groupTime := range groupTimes {
         var panelgroup PanelGroup
-        // Top group has no title
-        if gi != 0 {
+        // Group title.
+        if gi == 0 {
+            panelgroup.Title = "Today"
+        } else {
             panelgroup.Title = groupTime.Format(groupTimeFormat)
         }
 
@@ -92,9 +94,16 @@ func FilterPageData(f database.Filter) WebpageData {
         copy(panelsSorted, panels)
         sort.Sort(ByViewers(panelsSorted))
 
-        // Fill in filter booleans
+        // Fill in filter booleans.
         for i, p := range panelsSorted {
-            panels[p.OriginalIndex].FilterTop10 = i < 10
+            // For the top section, scale the filters by fraction through the
+            // current day.
+            var fractionThroughDay float64 = 1
+            if gi == 0 {
+                fractionThroughDay = float64(roundTime.Sub(groupTime).Nanoseconds()) / float64((24*time.Hour).Nanoseconds())
+            }
+
+            panels[p.OriginalIndex].FilterTop10 = i < int(10*fractionThroughDay)
         }
 
         panelgroup.StreamPanels = panels
