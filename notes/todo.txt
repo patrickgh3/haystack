@@ -1,7 +1,4 @@
-Filter by username. (Sudnep's suggestion)
-
 Write What Is This and How Does It Work texts.
-Design logo.
 
 Show clips created during that stream.
 Mobile view. (check hckrnews)
