@@ -94,16 +94,39 @@ function updateFilter() {
 
     var children = document.getElementById('streamList').children;
     var filter = document.getElementById('filterSelect').value;
+    var searchText = document.getElementById('searchtext').value.toLowerCase();
     for (var i=0; i<children.length; i++) {
         var s = children[i];
         // Skip day spacers.
         if (s.classList.contains('day')) {
             continue;
         }
+        var rightLink = s.children[1];
 
         var visible = true;
+        // Apply filter (top10, etc)
         if (filter == 'top10') {
-            visible = s.children[1].dataset['filtertop10'];
+            visible = rightLink.dataset['filtertop10'];
+        }
+
+        // Check children for search text (this is janky!)
+        if (searchText && visible) {
+            var inChannel = false;
+            var inTitle = false;
+            for (var j=0; j<rightLink.children.length; j++) {
+                var child = rightLink.children[j];
+                if (child.classList.contains('channel')) {
+                    inChannel = child.innerHTML.toLowerCase().
+                        indexOf(searchText) != -1;
+                }
+                else if (child.classList.contains('title')) {
+                    inTitle = child.innerHTML.toLowerCase().
+                        indexOf(searchText) != -1;
+                }
+            }
+            if (!inChannel && !inTitle) {
+                visible = false;
+            }
         }
 
         if (visible) {
@@ -121,6 +144,27 @@ function updateFilter() {
 function createCookie(name,value) {
       var expires = "; expires=" + 'Fri, 31 Dec 9999 23:59:59 GMT';
       document.cookie = name + "=" + value + expires + "; path=/";
+}
+
+function searchKeyPressed(e) {
+    if (e.keyCode === 13) {
+        e.preventDefault();
+        search();
+    }
+}
+
+// Search pressed
+function search() {
+    document.getElementById('searchclearbutton').style.display = 'inline';
+    updateFilter();
+}
+
+// Clear pressed
+function clearSearch() {
+    console.log('clear');
+    document.getElementById('searchclearbutton').style.display = 'none';
+    document.getElementById('searchtext').value = '';
+    updateFilter();
 }
 
 // Set filter from cookie.

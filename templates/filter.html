@@ -16,6 +16,12 @@
 
       <div id="toprow">
         <div class="toplive cell"></div><div class="topviewers cell">Avg. Viewers</div><div class="topchannel cell"></div><div class="toptitle cell"></div>
+        <div id="search">
+          Search:
+          <input id="searchtext" type="text" onkeypress="searchKeyPressed(event);" autocomplete="off"></input>
+          <input id="searchbutton" type="image" src="{{.AppBaseUrl}}/images/magnifying-glass-4x.png" onClick="search();"></input>
+          <input id="searchclearbutton" type="button" value="X" onClick="clearSearch();"></input>
+        </div>
         <div id="filter">
           Filter:
           <select id="filterSelect" onChange="updateFilter();" autocomplete="off">

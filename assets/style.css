@@ -14,7 +14,7 @@ body {
 
 /* Column labels and filters */
 
-#toprow { margin-top:2em; }
+#toprow { margin-top:2em; height:2em; }
 .toplive    { font-size:0.75em; width:6.66em; text-align:right; }
 .topviewers { font-size:0.75em; width:6.66em; text-align:right; }
 .topchannel { font-size:0.75em; width:9.33em; margin-left:4em; }
@@ -22,13 +22,16 @@ body {
 
 #filter { float:right; }
 #filter select { width:7em; }
+#search { margin-left:3em; float:right; }
+#searchbutton { width:1em; height:1em; }
+#searchclearbutton { display:none; }
 
 /* Main list */
 
 ul { line-height:2em; list-style:none; padding-left:0; }
 
 .cell { display:inline-block; text-overflow:ellipsis; white-space:nowrap; 
-    overflow:hidden; vertical-align:top; } /* Fuck CSS */
+    overflow:hidden; vertical-align:top; } /* Heck CSS */
 
 .live    { width:5em; color:#CA0321; text-align:center; }
 .viewers { width:5em; text-align:right; }
