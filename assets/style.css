@@ -40,4 +40,16 @@ li a:hover { background-color:#ddd; cursor:pointer; }
 .selectedstream { background-color:#bbb; }
 .selectedstream:hover { background-color:#bbb; }
 
-.streamdetails { margin-left:5em; } /* Height is set by JS */
+/* Stream details */
+
+.streamdetails { margin-left:5em; display:flex; width:58em; } /* Height is set by JS */
+.streamdetails .novodlink { background-color:red; }
+.streamdetails a { display:inline-block; overflow:hidden;
+    background-color:white; display:flex; object-fit:cover; }
+.streamdetails img { height:5em; width:auto; display:block; overflow:hidden;
+    object-fit:cover; }
+.streamdetails img:hover { opacity:0.7; }
+
+#magnifier { position:absolute; visibility:hidden; z-index:1;
+             background-size:contain; }
+    #magnifier img { display:block; width:24em; height:13.5em; }

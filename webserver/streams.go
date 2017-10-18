@@ -15,7 +15,7 @@ const twitchVodBaseUrl = "https://www.twitch.tv/videos/"
 var streamTemplate = template.Must(template.New("streamTemplate").Parse(
 `{{range .Thumbs}}
 <a {{if .HasVOD}}href="{{.LinkUrl}}"{{else}}class="novodlink"{{end}} target="_blank">
-    <img src="{{.ImageUrl}}" onmousemove="magnify(this, true)" onmouseout="unmagnify()">
+    <img src="{{.ImageUrl}}" onmousemove="magnify(event, this, true)" onmouseout="unmagnify()">
 </a>
 {{end}}
 `))

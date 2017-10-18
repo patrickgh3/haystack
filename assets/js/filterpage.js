@@ -24,7 +24,7 @@ function expandStream(streamElm) {
     var detailsElm = document.createElement('div');
     detailsElm.className = 'streamdetails';
     streamElm.insertAdjacentElement('afterend', detailsElm);
-    $(detailsElm).height(0).animate({height:'4em'}, 200);
+    $(detailsElm).height(0).animate({height:'5em'}, 200);
 
     // Style stream element.
     streamElm.classList.add('selectedstream');
@@ -84,7 +84,7 @@ function updateSelectedDetails() {
     }
 }
 
-function filterChanged(selectElm) {
+function updateFilter() {
     // Collapse selected stream.
     if (selectedStream != null) {
         selectedStream.nextElementSibling.remove();
@@ -93,6 +93,7 @@ function filterChanged(selectElm) {
     }
 
     var children = document.getElementById('streamList').children;
+    var filter = document.getElementById('filterSelect').value;
     for (var i=0; i<children.length; i++) {
         var s = children[i];
         // Skip day spacers.
@@ -101,7 +102,7 @@ function filterChanged(selectElm) {
         }
 
         var visible = true;
-        if (selectElm.value == 'top10') {
+        if (filter == 'top10') {
             visible = s.children[1].dataset['filtertop10'];
         }
 
@@ -111,4 +112,20 @@ function filterChanged(selectElm) {
             s.style.display = 'none';
         }
     }
+
+    // Save filter to cookie.
+    createCookie('filter', filter);
+}
+
+// Not sure where I got this from...
+function createCookie(name,value) {
+      var expires = "; expires=" + 'Fri, 31 Dec 9999 23:59:59 GMT';
+      document.cookie = name + "=" + value + expires + "; path=/";
+}
+
+// Set filter from cookie.
+var filter = document.cookie.replace(/(?:(?:^|.*;\s*)filter\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+if (filter) {
+    document.getElementById('filterSelect').value = filter;
+    updateFilter();
 }

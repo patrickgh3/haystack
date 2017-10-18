@@ -22,9 +22,9 @@ func main () {
     // Set up webpage stuff
     webserver.InitTemplates()
 
-    fmt.Print("Debug regenerating filters pages...")
+    /*fmt.Print("Debug regenerating filters pages...")
     RegenerateFilterPages()
-    fmt.Print("Done\n")
+    fmt.Print("Done\n")*/
 
     // Start web server to handle HTTP requets
     // NOTE: removed "go"

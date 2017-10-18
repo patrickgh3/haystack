@@ -5,6 +5,8 @@
     <link rel="stylesheet" type="text/css" href="{{.AppBaseUrl}}/style.css">
   </head>
   <body>
+    <div id="magnifier"><img></div>
+
     <div id="container">
       <div id="logo">
         <h1>Haystack</h1>
@@ -15,7 +17,7 @@
         <div class="toplive cell"></div><div class="topviewers cell">Avg. Viewers</div><div class="topchannel cell"></div><div class="toptitle cell"></div>
         <div id="filter">
           Filter:
-          <select onChange="filterChanged(this);">
+          <select id="filterSelect" onChange="updateFilter();" autocomplete="off">
             <option value="top10">Top 10</option>
             <option value="all" selected="selected">All</option>
           </select>
@@ -40,5 +42,6 @@
       haystackBaseUrl = {{.AppBaseUrl}};
     </script>
     <script type="text/javascript" src="{{.AppBaseUrl}}/js/filterpage.js"></script>
+    <script type="text/javascript" src="{{.AppBaseUrl}}/js/magnify.js"></script>
   </body>
 </html>

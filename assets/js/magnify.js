@@ -1,26 +1,22 @@
-// http://javascript.info/coordinates#getCoords
-// Get absolute document coordinates from element coordinates
-function getDocumentCoords(elem) {
-  let box = elem.getBoundingClientRect();
-  return {
-    top: box.top + pageYOffset,
-    bottom: box.bottom + pageYOffset,
-    left: box.left + pageXOffset,
-    right: box.right + pageXOffset
-  };
-}
-
 // Update magnifier to a given thumb element
-function magnify(thumbElt, hasVod) {
+function magnify(event, thumbElt, hasVod) {
     // Grab magnifier elements
     var m = document.getElementById("magnifier");
     var img = m.children[0];
 
-    // Calculate new coordinates
+    // Set X centered on mouse cursor.
     var x = event.pageX;
     x -= img.width/2;
-    x = Math.max(10, Math.min(document.body["scrollWidth"]-(img.width+10),x));
-    var y = getDocumentCoords(thumbElt).bottom+0;
+    // Clamp x on screen
+    //x = Math.max(10, Math.min(document.body["scrollWidth"]-(img.width+10),x));
+
+    // Set Y above thumb, or below if that's off the top of the screen.
+    var thumbTop = thumbElt.getBoundingClientRect().top;
+    // Extra 1 px for Firefox
+    var y = thumbTop + window.pageYOffset - m.clientHeight + 1;
+    if (y < window.pageYOffset) {
+        y = thumbElt.getBoundingClientRect().bottom + window.pageYOffset;
+    }
 
     // Move magnifier
     m.style.visibility = "visible";

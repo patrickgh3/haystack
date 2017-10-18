@@ -94,7 +94,7 @@ func FilterPageData(f database.Filter) WebpageData {
 
         // Fill in filter booleans
         for i, p := range panelsSorted {
-            panels[p.OriginalIndex].FilterTop10 = i <= 10
+            panels[p.OriginalIndex].FilterTop10 = i < 10
         }
 
         panelgroup.StreamPanels = panels
