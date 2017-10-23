@@ -1,7 +1,8 @@
-Write What Is This and How Does It Work texts.
-
-Show clips created during that stream.
+About page. (also include How Does It Work section)
+Dark theme.
+Fix MySQL unicode.
 Mobile view. (check hckrnews)
+Show clips created during that stream.
 
 
 
