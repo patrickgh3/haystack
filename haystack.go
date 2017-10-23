@@ -36,6 +36,11 @@ func main () {
 func RegenerateFilterPages() {
     filters := database.GetAllFilters()
     for _, filter := range filters {
+        // Debug skip all other filter pages
+        if filter.Subpath != "fangames" {
+            fmt.Printf("Debug skipping all but fangame\n")
+            continue
+        }
         wpd := webserver.FilterPageData(filter)
 
         dir := path.Join(config.Path.Root, filter.Subpath)

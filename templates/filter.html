@@ -3,16 +3,20 @@
   <head>
     <title>Haystack - {{.Title}}</title>
     <link rel="stylesheet" type="text/css" href="{{.AppBaseUrl}}/style.css">
+    <link rel="shortcut icon" type="image/png" href="{{.AppBaseUrl}}/images/favicon.png"/>
   </head>
   <body>
     <div id="magnifier"><img></div>
 
     <div id="container">
       <div id="logo">
-        <h1>Haystack</h1>
+        <h1><a href="{{.AppBaseUrl}}">Haystack</a></h1>
         <h3>Never miss a missed stream.</h3>
-        <!-- Find all your missed Twitch content in one place. -->
       </div>
+
+      <h2 id="groupname">
+        <a href="">{{.Title}}</a>
+      </h2>
 
       <div id="toprow">
         <div class="toplive cell"></div><div class="topviewers cell">Avg. Viewers</div><div class="topchannel cell"></div><div class="toptitle cell"></div>

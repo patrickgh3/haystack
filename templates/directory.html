@@ -1,21 +1,25 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Haystack</title>
-        <link rel="stylesheet" type="text/css" href="{{.AppBaseUrl}}/theme.css">
-    </head>
-    <body>
-        <div id="header">
-            <h1><a href="{{.AppBaseUrl}}">Haystack</a></h1>
-            <h2>Catch up on recent livestreams</h2>
-            <h3>{{.Title}}</h3>
-        </div>
-        <div id="content">
-            <div id="directory">
+  <head>
+    <title>Haystack</title>
+    <link rel="stylesheet" type="text/css" href="{{.AppBaseUrl}}/style.css">
+    <link rel="shortcut icon" type="image/png" href="{{.AppBaseUrl}}/images/favicon.png"/>
+  </head>
+  <body>
+    <div id="container">
+
+      <div id="logo">
+        <h1><a href="{{.AppBaseUrl}}">Haystack</a></h1>
+        <h3>Never miss a missed stream.</h3>
+      </div>
+
+      <div id="container">
+        Select a group below.<br>
 {{range .Links}}
-                <a href="{{.Link}}">{{.Name}}</a><br>
+        <a href="{{.Link}}">{{.Name}}</a><br>
 {{end}}
-            </div>
-        </div>
-    </body>
+      </div>
+
+    </div>
+  </body>
 </html>
