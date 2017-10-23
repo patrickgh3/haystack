@@ -9,10 +9,18 @@
     <div id="magnifier"><img></div>
 
     <div id="container">
-      <div id="logo">
-        <h1><a href="{{.AppBaseUrl}}">Haystack</a></h1>
-        <h3>Never miss a missed stream.</h3>
-      </div>
+      <header>
+        <div id="logo">
+          <h1><a href="{{.AppBaseUrl}}">Haystack</a></h1>
+          <h3>Never miss a missed stream.</h3>
+        </div>
+
+        <nav>
+          <a href="{{.AppBaseUrl}}">Groups</a>
+          <a href="{{.AppBaseUrl}}/about">About</a>
+          <div class="clearboth"></div>
+        </nav>
+      </header>
 
       <h2 id="groupname">
         <a href="">{{.Title}}</a>

@@ -7,6 +7,9 @@ import (
     "net/http/fcgi"
     "net/url"
     "strings"
+    "os"
+    "bufio"
+    "io"
     "path"
     "html/template"
     "strconv"
@@ -19,6 +22,10 @@ const filterFilepath = "templates/filter.html"
 var filterTempl *template.Template
 const directoryFilepath = "templates/directory.html"
 var directoryTempl *template.Template
+const _404Filepath = "templates/404.html"
+var _404Templ *template.Template
+const aboutFilepath = "templates/about.html"
+var aboutTempl *template.Template
 
 // InitTemplates initializes page templates from the included files
 func InitTemplates() {
@@ -30,6 +37,54 @@ func InitTemplates() {
             template.ParseFiles(ef + "/" + filterFilepath))
     directoryTempl = template.Must(
             template.ParseFiles(ef + "/" + directoryFilepath))
+    _404Templ = template.Must(
+            template.ParseFiles(ef + "/" + _404Filepath))
+    aboutTempl = template.Must(
+            template.ParseFiles(ef + "/" + aboutFilepath))
+}
+
+// GenerateStaticPages writes files 404.html, about.html, etc.
+func GenerateStaticPages() {
+    // 404
+    f, err := os.Create(path.Join(config.Path.Root, "404.html"))
+    defer f.Close()
+    if err != nil {
+        panic(err)
+    }
+    w := bufio.NewWriter(f)
+    Write404Page(w)
+    w.Flush()
+
+    // About
+    dir := path.Join(config.Path.Root, "about")
+    err = os.Mkdir(dir, os.ModePerm)
+    if err != nil && !os.IsExist(err) {
+        panic(err)
+    }
+    f, err = os.Create(path.Join(dir, "index.html"))
+    defer f.Close()
+    if err != nil {
+        panic(err)
+    }
+    w = bufio.NewWriter(f)
+    WriteAboutPage(w)
+    w.Flush()
+}
+
+type BasicResponseData struct {
+    AppBaseUrl string
+}
+
+// Write404Page writes the 404 page.
+func Write404Page(w io.Writer) {
+    d := BasicResponseData{AppBaseUrl:config.Path.SiteUrl}
+    _404Templ.Execute(w, d)
+}
+
+// WriteAboutPage writes the about page.
+func WriteAboutPage(w io.Writer) {
+    d := BasicResponseData{AppBaseUrl:config.Path.SiteUrl}
+    aboutTempl.Execute(w, d)
 }
 
 type FastCGIServer struct{}
@@ -63,6 +118,7 @@ func (s FastCGIServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     } else {
         w.WriteHeader(http.StatusNotFound)
     }
+
     /*    // Try serving filter page
         filterPath := strings.ToLower(subPath[1:len(subPath)])
         f := database.GetFilterWithSubpath(filterPath)
@@ -83,3 +139,4 @@ func Serve() {
     b := new(FastCGIServer)
     fcgi.Serve(l, b)
 }
+

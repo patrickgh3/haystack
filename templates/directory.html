@@ -8,17 +8,22 @@
   <body>
     <div id="container">
 
-      <div id="logo">
-        <h1><a href="{{.AppBaseUrl}}">Haystack</a></h1>
-        <h3>Never miss a missed stream.</h3>
-      </div>
+      <header>
+        <div id="logo">
+          <h1><a href="{{.AppBaseUrl}}">Haystack</a></h1>
+          <h3>Never miss a missed stream.</h3>
+        </div>
 
-      <div id="container">
-        Select a group below.<br>
+        <nav>
+          <a href="{{.AppBaseUrl}}/about">About</a>
+          <div class="clearboth"></div>
+        </nav>
+      </header>
+
+      Select a group below.<br>
 {{range .Links}}
-        <a href="{{.Link}}">{{.Name}}</a><br>
+      <a href="{{.Link}}">{{.Name}}</a><br>
 {{end}}
-      </div>
 
     </div>
   </body>

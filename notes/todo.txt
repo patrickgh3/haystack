@@ -1,4 +1,3 @@
-About page. (also include How Does It Work section)
 Dark theme.
 Fix MySQL unicode.
 Mobile view. (check hckrnews)

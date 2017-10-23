@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Haystack - About</title>
+    <link rel="stylesheet" type="text/css" href="{{.AppBaseUrl}}/style.css">
+    <link rel="shortcut icon" type="image/png" href="{{.AppBaseUrl}}/images/favicon.png"/>
+  </head>
+  <body>
+    <div id="container">
+      <header>
+        <div id="logo">
+          <h1><a href="{{.AppBaseUrl}}">Haystack</a></h1>
+          <h3>Never miss a missed stream.</h3>
+        </div>
+
+        <nav>
+          <a href="{{.AppBaseUrl}}">Groups</a>
+          <div class="clearboth"></div>
+        </nav>
+      </header>
+
+      <div id="about">
+        <h2>What is this?</h2>
+        <p>Haystack is a web application for browsing past <a href="https://www.twitch.tv/p/about/">Twitch</a> streams. Catch up on what you missed after busy days, and quickly scan for interesting moments.</p>
+        <p>Currently under development by Patrickgh3. I made this :)</p>
+        <h2>How it works</h2>
+        <p>Every 5 minutes, the application queries Twitch to get a list of all live channels that we follow. This "snapshot", including thumbnail images, is stored in a carefully structured database. Then, with a little magic, the database is accessible through this website. Also there are a bunch of fun intricacies and edge cases.</p>
+        <p>Haystack is written in Go, uses MySQL and Nginx, and runs on a DigitalOcean droplet.</p>
+        <p>The interface is heavily inspired by <a href="http://hckrnews.com/">hckrnews</a>.</p>
+        <p><a href="https://github.com/patrickgh3/haystack">GitHub Repo</a></p>
+        <h2>To Do list</h2>
+        <p>Dark mode, fix glitched characters, mobile view, stream clips.</p>
+        <h2>Change log</h2>
+        <p>2017-10-23 - Added this About page</p>
+        <p>2017-10-18 - Added search, fix ordering</p>
+        <p>2017-10-17 - Overhauled UI</p>
+      </div>
+    </div>
+  </body>
+</html>
