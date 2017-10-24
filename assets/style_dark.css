@@ -48,6 +48,7 @@ nav a { color:white; margin-left:1em; }
 #searchclearbutton { display:none; }
 input[type=text] { background-color:#222; color:white; }
 select { background-color:#222; color:white; }
+input[type=button] { background-color:#222; color:white; }
 
 #darkmode { float:right; }
 #darkmode a:hover { text-decoration:underline; cursor:pointer; }
