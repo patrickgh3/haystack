@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Haystack - {{.Title}}</title>
-    <link rel="stylesheet" type="text/css" href="{{.AppBaseUrl}}/style.css">
+    <link id="stylesheet" rel="stylesheet" type="text/css" href="{{.AppBaseUrl}}/style.css">
     <link rel="shortcut icon" type="image/png" href="{{.AppBaseUrl}}/images/favicon.png"/>
   </head>
   <body>
@@ -31,7 +31,7 @@
         <div id="search">
           Search:
           <input id="searchtext" type="text" onkeypress="searchKeyPressed(event);" autocomplete="off"></input>
-          <input id="searchbutton" type="image" src="{{.AppBaseUrl}}/images/magnifying-glass-4x.png" onClick="search();"></input>
+          <input id="searchbutton" type="image" src="{{.AppBaseUrl}}/images/magnifying-glass.png" onClick="search();"></input>
           <input id="searchclearbutton" type="button" value="X" onClick="clearSearch();"></input>
         </div>
         <div id="filter">
@@ -40,6 +40,9 @@
             <option value="top10">Top 10</option>
             <option value="all" selected="selected">All</option>
           </select>
+        </div>
+        <div id="darkmode">
+          <a id="darkmodelink" onclick="toggleDarkMode()">Darq Mode</a>
         </div>
       </div>
 

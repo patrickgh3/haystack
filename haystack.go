@@ -24,9 +24,9 @@ func main () {
     // Generate about, 404, etc. static pages
     webserver.GenerateStaticPages()
 
-    /*fmt.Print("Debug regenerating filters pages...")
+    fmt.Print("Debug regenerating filters pages...")
     RegenerateFilterPages()
-    fmt.Print("Done\n")*/
+    fmt.Print("Done\n")
 
     // Start web server to handle HTTP requets
     go webserver.Serve()
@@ -39,10 +39,10 @@ func RegenerateFilterPages() {
     filters := database.GetAllFilters()
     for _, filter := range filters {
         // Debug skip all other filter pages
-        /*if filter.Subpath != "fangames" {
+        if filter.Subpath != "fangames" {
             fmt.Printf("Debug skipping all but fangame\n")
             continue
-        }*/
+        }
         wpd := webserver.FilterPageData(filter)
 
         dir := path.Join(config.Path.Root, filter.Subpath)

@@ -155,8 +155,12 @@ function searchKeyPressed(e) {
 
 // Search pressed
 function search() {
-    document.getElementById('searchclearbutton').style.display = 'inline';
-    updateFilter();
+    if (!document.getElementById('searchtext').value) {
+        clearSearch();
+    } else {
+        document.getElementById('searchclearbutton').style.display = 'inline';
+        updateFilter();
+    }
 }
 
 // Clear pressed
@@ -167,9 +171,32 @@ function clearSearch() {
     updateFilter();
 }
 
+// Toggle dark mode
+function toggleDarkMode() {
+    darkmode = !darkmode;
+    applyDarkMode();
+}
+
+function applyDarkMode() {
+    if (darkmode) {
+        document.getElementById('stylesheet').href = haystackBaseUrl + '/style_dark.css';
+        document.getElementById('darkmodelink').innerHTML = 'Light Mode';
+    } else {
+        document.getElementById('stylesheet').href = haystackBaseUrl + '/style.css';
+        document.getElementById('darkmodelink').innerHTML = 'Darq Mode';
+    }
+    createCookie('darkmode', darkmode);
+}
+
 // Set filter from cookie.
 var filter = document.cookie.replace(/(?:(?:^|.*;\s*)filter\s*\=\s*([^;]*).*$)|^.*$/, "$1");
 if (filter) {
     document.getElementById('filterSelect').value = filter;
     updateFilter();
+}
+
+// Set dark mode from cookie.
+darkmode = document.cookie.replace(/(?:(?:^|.*;\s*)darkmode\s*\=\s*([^;]*).*$)|^.*$/, "$1") == 'true';
+if (darkmode) {
+    applyDarkMode();
 }
