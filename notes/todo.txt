@@ -1,7 +1,7 @@
-Dark theme.
-Fix MySQL unicode.
 Mobile view. (check hckrnews)
 Show clips created during that stream.
+    Check that clips are returned chronologically. Do we need to increase the query limit?
+    Do CSS, choose top 2 clips.
 
 
 

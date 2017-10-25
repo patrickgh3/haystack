@@ -20,16 +20,26 @@ var streamTemplate = template.Must(template.New("streamTemplate").Parse(
     <img src="{{.ImageUrl}}" onmousemove="magnify(event, this, true)" onmouseout="unmagnify()">
 </a>
 {{end}}
+<div class=".clips">
+{{range .Clips}}
+<a href="{{.ClipUrl}}"><img src="{{.ImageUrl}}"></a>
+{{end}}
+</div>
 `))
 
 type StreamResponseData struct {
     Length string
     Thumbs []StreamResponseThumb
+    Clips  []StreamResponseClip
 }
 type StreamResponseThumb struct {
     LinkUrl string
     ImageUrl string
     HasVOD bool
+}
+type StreamResponseClip struct {
+    ClipUrl string
+    ImageUrl string
 }
 
 // ServeStreamRequest serves a series of <a><img></a> tags for thumbs of a
@@ -67,6 +77,13 @@ func ServeStreamRequest(w http.ResponseWriter, r *http.Request) {
                     LinkUrl:linkUrl,
                     ImageUrl:config.Path.SiteUrl+thumb.ImagePath,
                     HasVOD:hasVOD})
+        }
+
+        // Clips
+        clips := database.GetStreamClips(streamId)
+        for _, clip := range clips {
+            td.Clips = append(td.Clips, StreamResponseClip{
+                    ClipUrl:clip.ClipUrl, ImageUrl:clip.ImageUrl})
         }
 
         // Fill thumbs into response HTML

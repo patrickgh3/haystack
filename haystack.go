@@ -24,9 +24,26 @@ func main () {
     // Generate about, 404, etc. static pages
     webserver.GenerateStaticPages()
 
-    fmt.Print("Debug regenerating filters pages...")
+    /*fmt.Print("Debug getting Stonk's clips...\n")
+    cr := twitchapi.TopClipsWeek("stonk")
+    fmt.Printf("%v clips this week\n", len(cr.Clips))
+
+    for _, clip := range cr.Clips {
+        fmt.Printf("Clip ID: %v\n", clip.TrackingId)
+        fmt.Printf("Clip Url: %v\n", clip.Url)
+        fmt.Printf("Clip Created_At: %v\n", clip.Created_At_Time)
+        fmt.Printf("Clip Thumb Url: %v\n", clip.Thumbnails.Small)
+        database.AddClipToDB(clip.TrackingId, 25276, clip.Created_At_Time,
+                clip.Thumbnails.Small, clip.Url)
+    }*/
+
+    /*fmt.Print("Debug regenerating filters pages...")
     RegenerateFilterPages()
-    fmt.Print("Done\n")
+    fmt.Print("Done\n")*/
+
+    /*fmt.Print("Debug Update()...")
+    Update()
+    fmt.Print("Done\n")*/
 
     // Start web server to handle HTTP requets
     go webserver.Serve()
@@ -39,10 +56,10 @@ func RegenerateFilterPages() {
     filters := database.GetAllFilters()
     for _, filter := range filters {
         // Debug skip all other filter pages
-        if filter.Subpath != "fangames" {
+        /*if filter.Subpath != "fangames" {
             fmt.Printf("Debug skipping all but fangame\n")
             continue
-        }
+        }*/
         wpd := webserver.FilterPageData(filter)
 
         dir := path.Join(config.Path.Root, filter.Subpath)
@@ -156,6 +173,13 @@ func Update () {
                 roundTime, stream.Channel.Name, stream.Channel.Display_name,
                 vodSeconds, vodID, imagePath, vodTime, stream.Channel.Status,
                 stream.Viewers, sf.FilterIds)
+
+        // Query Twitch for the channel's recent clips.
+        cr := twitchapi.TopClipsDay(stream.Channel.Name)
+        for _, clip := range cr.Clips {
+            database.AddClipToDB(clip.TrackingId, clip.Created_At_Time,
+                    clip.Thumbnails.Small, clip.Url, stream.Channel.Name)
+        }
     }
 
     // Delete old streams (and their thumbs, follows, image files) from the DB

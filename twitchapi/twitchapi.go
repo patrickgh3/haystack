@@ -70,6 +70,22 @@ type Video struct {
     Created_At_Time time.Time `json:"-"`
 }
 
+type ClipsResponse struct {
+    Clips []*Clip
+}
+
+type Clip struct {
+    TrackingId      string `json:"tracking_id"`
+    Url             string
+    Created_At      string
+    Created_At_Time time.Time
+    Thumbnails      Thumbnails
+}
+
+type Thumbnails struct {
+    Small string
+}
+
 const videoTimeString = "2006-01-02T15:04:05Z"
 
 // These "convert struct types" functions perform type converions
@@ -96,6 +112,16 @@ func convertVideoTypes(video *Video) {
         }
         video.Created_At_Time = t
         video.Id = video.Id[1:] // Strip leading "v"
+    }
+}
+
+func convertClipTypes(clip *Clip) {
+    if clip != nil {
+        t, err := time.Parse(videoTimeString, clip.Created_At)
+        if err != nil {
+            panic(err)
+        }
+        clip.Created_At_Time = t
     }
 }
 
@@ -153,6 +179,17 @@ func FollowedStreams (authorization string) *StreamsResponse {
     generalQuery(urlTail, authorization, &r)
     for _, s := range r.Streams {
         convertStreamTypes(s)
+    }
+    return r
+}
+
+func TopClipsDay (channelID string) *ClipsResponse {
+    urlTail := fmt.Sprintf("/clips/top?channel=%v&period=day", channelID)
+    r := new(ClipsResponse)
+    generalQuery(urlTail, "", &r)
+
+    for _, clip := range r.Clips {
+        convertClipTypes(clip)
     }
     return r
 }

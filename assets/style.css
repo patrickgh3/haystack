@@ -88,6 +88,10 @@ li a:hover { background-color:#ddd; cursor:pointer; }
              background-size:contain; }
     #magnifier img { display:block; width:24em; height:13.5em; }
 
+/* Clips */
+
+.clips img { width:1em; height:1em; }
+
 /* About */
 
 p { margin-top:1em; }

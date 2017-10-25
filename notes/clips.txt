@@ -1,0 +1,6 @@
+Clips table: id, stream_id, created_at, image_url, clip_url
+Query Twitch for clips of current stream
+Store clips in DB
+Retreive clips for each stream
+Put clips into HTML template
+CSS for clips

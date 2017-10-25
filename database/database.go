@@ -48,6 +48,15 @@ type Thumb struct {
     ImagePath   string
 }
 
+type Clip struct {
+    gorm.Model
+    ClipID          string
+    StreamID        uint
+    ClipCreatedAt   time.Time
+    ImageUrl        string
+    ClipUrl         string
+}
+
 var db *gorm.DB
 
 // InitDB initializes the database.
@@ -61,7 +70,7 @@ func InitDB() {
     }
 
     // Migrate the schema
-    db.AutoMigrate(&Filter{}, &Follow{}, &Stream{}, &Thumb{})
+    db.AutoMigrate(&Filter{}, &Follow{}, &Stream{}, &Thumb{}, &Clip{})
 }
 
 // AddThumbToDB adds a new Thumb to the DB, possibly creating a new Stream.
@@ -201,5 +210,35 @@ func GetFilterWithSubpath(Subpath string) *Filter {
         return &(filters[0])
     }
     return nil
+}
+
+// AddClipToDB inserts a clip into the database if it does not already exist.
+func AddClipToDB(ClipID string, CreatedAt time.Time,
+        ImageUrl string, ClipUrl string, ChannelName string) {
+    var c []Clip
+    db.Where("clip_id = ?", ClipID).Find(&c)
+    if len(c) == 0 {
+        fmt.Printf("Clip NOT found\n")
+
+        // Find the most recent stream.
+        var s []Stream
+        db.Where("channel_name = ?", ChannelName).
+                Order("last_update_time desc").Find(&s)
+        if len(s) != 0 {
+            // Insert clip.
+            db.Create(&Clip{ClipID:ClipID, StreamID:s[0].ID,
+                    ClipCreatedAt:CreatedAt, ImageUrl:ImageUrl, ClipUrl:ClipUrl})
+        } else {
+            fmt.Printf("OMG WTF we are adding a clip but we couldn't find a stream of that channel!!\n")
+        }
+    } else {
+        fmt.Printf("Clip found\n")
+    }
+}
+
+func GetStreamClips(streamId uint) []Clip {
+    var clips []Clip
+    db.Where("stream_id = ?", streamId).Order("id asc").Find(&clips)
+    return clips
 }
 
