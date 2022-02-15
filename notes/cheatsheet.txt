@@ -5,6 +5,9 @@ twitch configure
 twitch token
 (query_param column in DB formatted like "?game_id=1234"
 
+Upgrade go version on wanagai server:
+https://buildvirtual.net/how-to-upgrade-go-on-ubuntu/
+
 
 
 

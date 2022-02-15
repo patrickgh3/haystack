@@ -20,12 +20,14 @@ var streamTemplate = template.Must(template.New("streamTemplate").Parse(
     <img src="{{.ImageUrl}}" onmousemove="magnify(event, this, true)" onmouseout="unmagnify()">
 </a>
 {{end}}
+`))
+/*
 <div class=".clips">
 {{range .Clips}}
 <a href="{{.ClipUrl}}"><img src="{{.ImageUrl}}"></a>
 {{end}}
 </div>
-`))
+*/
 
 type StreamResponseData struct {
     Length string
@@ -80,11 +82,11 @@ func ServeStreamRequest(w http.ResponseWriter, r *http.Request) {
         }
 
         // Clips
-        clips := database.GetStreamClips(streamId)
+        /*clips := database.GetStreamClips(streamId)
         for _, clip := range clips {
             td.Clips = append(td.Clips, StreamResponseClip{
                     ClipUrl:clip.ClipUrl, ImageUrl:clip.ImageUrl})
-        }
+        }*/
 
         // Fill thumbs into response HTML
         streamTemplate.Execute(w, td)
