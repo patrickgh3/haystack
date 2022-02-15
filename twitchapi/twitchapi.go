@@ -63,7 +63,7 @@ type GetVideosResponse struct {
 }
 
 type Video struct {
-    Id              string `json:"_id"`
+    Id              string `json:"id"`
     Broadcast_Id    string `json:"stream_id"`
     Created_At      string
     Created_At_Time time.Time `json:"-"`
@@ -103,7 +103,6 @@ func convertVideoTypes(video *Video) {
             panic(err)
         }
         video.Created_At_Time = t
-        video.Id = video.Id[1:] // Strip leading "v"
     }
 }
 
