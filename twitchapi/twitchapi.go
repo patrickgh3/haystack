@@ -16,7 +16,6 @@ import (
     "encoding/json"
     "fmt"
     "time"
-    "strconv"
     "io"
     "github.com/patrickgh3/haystack/config"
     "strings"
@@ -65,8 +64,7 @@ type GetVideosResponse struct {
 
 type Video struct {
     Id              string `json:"_id"`
-    Broadcast_IdInt int `json:"stream_id"`
-    Broadcast_Id    string `json:"-"`
+    Broadcast_Id    string `json:"stream_id"`
     Created_At      string
     Created_At_Time time.Time `json:"-"`
 }
@@ -100,7 +98,6 @@ func convertStreamTypes(stream *Stream) {
 
 func convertVideoTypes(video *Video) {
     if video != nil {
-        video.Broadcast_Id = strconv.Itoa(video.Broadcast_IdInt)
         t, err := time.Parse(videoTimeString, video.Created_At)
         if err != nil {
             panic(err)
