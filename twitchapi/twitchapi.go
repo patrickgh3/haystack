@@ -50,10 +50,8 @@ type GetStreamsResponse struct {
 }
 
 type Stream struct {
-    IdInt        int `json:"id"`
-    Id           string `json:"-"`
-    ChannelIdInt jsonInt `json:"user_id"`
-    ChannelId    string `json:"-"`
+    Id           string `json:"id"`
+    ChannelId    string `json:"user_id"`
     Status       string `json:"title"`
     Viewers      int `json:"viewer_count"`
     Preview      string `json:"thumbnail_url"`
@@ -95,8 +93,6 @@ const videoTimeString = "2006-01-02T15:04:05Z"
 // into useful forms for IDs, times, etc.
 func convertStreamTypes(stream *Stream) {
     if stream != nil {
-        stream.Id = strconv.Itoa(stream.IdInt)
-        stream.ChannelId = strconv.Itoa(int(stream.ChannelIdInt))
         stream.Preview = strings.Replace(stream.Preview, "{width}", "320", 1)
         stream.Preview = strings.Replace(stream.Preview, "{height}", "180", 1)
     }
