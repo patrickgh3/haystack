@@ -27,6 +27,7 @@ type ConfPath struct {
 
 type ConfTwitch struct {
     ClientKey string `yaml:"client-key"`
+    AppAccessToken string `yaml:"app-access-token"`
 }
 
 type ConfDB struct {

@@ -116,15 +116,16 @@ func Update () {
     filters := database.GetAllFilters()
     for _, filter := range filters {
         // Make appropriate Twitch query
-        var sr *twitchapi.StreamsResponse
+        var sr *twitchapi.GetStreamsResponse
         if filter.QueryType == database.QueryTypeStreams {
             sr = twitchapi.AllStreams(filter.QueryParam)
-        } else if filter.QueryType == database.QueryTypeFollows {
-            sr = twitchapi.FollowedStreams(filter.QueryParam)
         }
+        //} else if filter.QueryType == database.QueryTypeFollows {
+        //    sr = twitchapi.FollowedStreams(filter.QueryParam)
+        //}
         // Assimilate all recieved streams into our tagged stream map
         for _, s := range sr.Streams {
-            id := s.Channel.Id
+            id := s.ChannelId
             if _, seen := taggedStreams[id]; !seen { // Idiom to check if in map
                 taggedStreams[id] = &taggedStream{Stream:s}
             }
@@ -136,12 +137,12 @@ func Update () {
     // For each (stream, filters) pair, grab and save a snapshot to the DB
     for _, sf := range taggedStreams {
         stream := sf.Stream
-        channelName := stream.Channel.Display_name
-        status := stream.Channel.Status
+        channelName := stream.ChannelDisplayName
+        status := stream.Status
         fmt.Printf("(%v) %v: %v\n", len(sf.FilterIds), channelName, status)
 
         // Query Twitch for the channel's most recent (current) archive video ID
-        archive := twitchapi.ChannelRecentArchive(stream.Channel.Id)
+        archive := twitchapi.ChannelRecentArchive(stream.ChannelId)
 
         // If this snapshot doesn't correspond to the most recent archive, then
         // either the streamer has disabled archiving, the archive somehow isn't
@@ -163,23 +164,25 @@ func Update () {
 
         // Download stream preview image from Twitch
         imagePath := config.Path.ImagesRelative + "/" +
-                stream.Channel.Name + "_" + unixTimeString + ".jpg"
+                stream.ChannelName + "_" + unixTimeString + ".jpg"
         imageDLPath := config.Path.Root + imagePath
-        imageUrl := stream.Preview.Medium
+        imageUrl := stream.Preview
         DownloadImage(imageUrl, imageDLPath)
 
         // Finally, store new info for this stream in the DB
         database.AddThumbToDB(
-                roundTime, stream.Channel.Name, stream.Channel.Display_name,
-                vodSeconds, vodID, imagePath, vodTime, stream.Channel.Status,
+                roundTime, stream.ChannelName, stream.ChannelDisplayName,
+                vodSeconds, vodID, imagePath, vodTime, stream.Status,
                 stream.Viewers, sf.FilterIds)
 
         // Query Twitch for the channel's recent clips.
-        cr := twitchapi.TopClipsDay(stream.Channel.Name)
-        for _, clip := range cr.Clips {
-            database.AddClipToDB(clip.TrackingId, clip.Created_At_Time,
-                    clip.Thumbnails.Small, clip.Url, stream.Channel.Name)
-        }
+        // Commented out 2022-02-14 due to helix API migration and we don't even
+        // or prune these clips anyways.
+        //cr := twitchapi.TopClipsDay(stream.ChannelName)
+        //for _, clip := range cr.Clips {
+        //    database.AddClipToDB(clip.TrackingId, clip.Created_At_Time,
+        //            clip.Thumbnails.Small, clip.Url, stream.ChannelName)
+        //}
     }
 
     // Delete old streams (and their thumbs, follows, image files) from the DB

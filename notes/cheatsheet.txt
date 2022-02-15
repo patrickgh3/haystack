@@ -1,3 +1,28 @@
+2022-02-14
+
+To get game IDs:
+twitch configure
+twitch token
+(query_param column in DB formatted like "?game_id=1234"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 For deploying, followed this guide:
 https://elithrar.github.io/article/running-go-applications-in-the-background/
 Installed supervisor, configured a little bit

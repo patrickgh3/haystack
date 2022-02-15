@@ -1,3 +1,14 @@
+// IMPORTANT NOTE
+// IMPORTANT NOTE
+// IMPORTANT NOTE
+// Migrated to helix twitch API on 2022-02-14 and not all
+// queries on this page are tested, such as user followed streams and clips stuff.
+// See this guide for migration if we ever want to use those:
+// https://dev.twitch.tv/docs/api/migration
+// IMPORTANT NOTE
+// IMPORTANT NOTE
+// IMPORTANT NOTE
+
 package twitchapi
 
 import (
@@ -6,7 +17,9 @@ import (
     "fmt"
     "time"
     "strconv"
+    "io"
     "github.com/patrickgh3/haystack/config"
+    "strings"
 )
 
 // Custom marshal type since Twitch is sometimes inconsistent with ints/strings
@@ -28,49 +41,39 @@ func (i *jsonInt) UnmarshalJSON(data []byte) error {
     return nil
 }
 
-type StreamsResponse struct {
-    Total   int `json:"_total"`
-    Streams []*Stream
-}
+//type StreamResponse struct {
+//    Stream *Stream
+//}
 
-type StreamResponse struct {
-    Stream *Stream
+type GetStreamsResponse struct {
+    Streams []*Stream `json:"data"`
 }
 
 type Stream struct {
-    IdInt   int `json:"_id"`
-    Id      string `json:"-"`
-    Channel *Channel
-    Preview *Preview
-    Viewers int
+    IdInt        int `json:"id"`
+    Id           string `json:"-"`
+    ChannelIdInt jsonInt `json:"user_id"`
+    ChannelId    string `json:"-"`
+    Status       string `json:"title"`
+    Viewers      int `json:"viewer_count"`
+    Preview      string `json:"thumbnail_url"`
+    ChannelName          string `json:"user_login"`
+    ChannelDisplayName   string `json:"user_name"`
 }
 
-type Channel struct {
-    IdInt           jsonInt `json:"_id"`
-    Id              string `json:"-"`
-    Display_name    string
-    Name            string
-    Status          string
-}
-
-type Preview struct {
-    Medium  string
-}
-
-type VideosResponse struct {
-    Total   int `json:"_total"`
-    Videos  []*Video
+type GetVideosResponse struct {
+    Videos []*Video `json:"data"`
 }
 
 type Video struct {
     Id              string `json:"_id"`
-    Broadcast_IdInt int `json:"broadcast_id"`
-    Broadcast_Id    string
+    Broadcast_IdInt int `json:"stream_id"`
+    Broadcast_Id    string `json:"-"`
     Created_At      string
     Created_At_Time time.Time `json:"-"`
 }
 
-type ClipsResponse struct {
+/*type ClipsResponse struct {
     Clips []*Clip
 }
 
@@ -84,22 +87,18 @@ type Clip struct {
 
 type Thumbnails struct {
     Small string
-}
+}*/
 
 const videoTimeString = "2006-01-02T15:04:05Z"
 
 // These "convert struct types" functions perform type converions
 // into useful forms for IDs, times, etc.
-func convertChannelTypes(channel *Channel) {
-    if channel != nil {
-        channel.Id = strconv.Itoa(int(channel.IdInt))
-    }
-}
-
 func convertStreamTypes(stream *Stream) {
     if stream != nil {
         stream.Id = strconv.Itoa(stream.IdInt)
-        convertChannelTypes(stream.Channel)
+        stream.ChannelId = strconv.Itoa(int(stream.ChannelIdInt))
+        stream.Preview = strings.Replace(stream.Preview, "{width}", "320", 1)
+        stream.Preview = strings.Replace(stream.Preview, "{height}", "180", 1)
     }
 }
 
@@ -115,7 +114,7 @@ func convertVideoTypes(video *Video) {
     }
 }
 
-func convertClipTypes(clip *Clip) {
+/*func convertClipTypes(clip *Clip) {
     if clip != nil {
         t, err := time.Parse(videoTimeString, clip.Created_At)
         if err != nil {
@@ -123,14 +122,14 @@ func convertClipTypes(clip *Clip) {
         }
         clip.Created_At_Time = t
     }
-}
+}*/
 
 // AllStreams returns all streams which match a given query.
 // See https://dev.twitch.tv/docs/v5/reference/streams/#get-all-streams
-func AllStreams (queryString string) *StreamsResponse {
-    urlTail := fmt.Sprintf("/streams/%v", queryString)
-    r := new(StreamsResponse)
-    generalQuery(urlTail, "", &r)
+func AllStreams (queryString string) *GetStreamsResponse {
+    urlTail := fmt.Sprintf("/streams%v", queryString)
+    r := new(GetStreamsResponse)
+    generalQuery(urlTail, config.Twitch.AppAccessToken, &r)
 
     for _, stream := range r.Streams {
         convertStreamTypes(stream)
@@ -140,10 +139,10 @@ func AllStreams (queryString string) *StreamsResponse {
 
 // ChannelVideos returns the videos from a channel.
 // See https://dev.twitch.tv/docs/v5/reference/channels/#get-channel-videos
-func ChannelVideos (channelID string, queryString string) *VideosResponse {
-    urlTail := fmt.Sprintf("/channels/%v/videos%v", channelID, queryString)
-    r := new(VideosResponse)
-    generalQuery(urlTail, "", &r)
+func GetVideos (queryString string) *GetVideosResponse {
+    urlTail := fmt.Sprintf("/videos%v", queryString)
+    r := new(GetVideosResponse)
+    generalQuery(urlTail, config.Twitch.AppAccessToken, &r)
 
     for _, video := range r.Videos {
         convertVideoTypes(video)
@@ -153,9 +152,8 @@ func ChannelVideos (channelID string, queryString string) *VideosResponse {
 
 // ChannelRecentArchive returns a channel's most recent archive video.
 func ChannelRecentArchive (channelID string) *Video {
-    vr := ChannelVideos (channelID,
-            "?broadcast_type=archive&sort=time&limit=1")
-    if vr.Total == 0 {
+    vr := GetVideos (fmt.Sprintf("?user_id=%v&type=archive&sort=time&first=1", channelID))
+    if len(vr.Videos) == 0 {
         return nil
     }
     return vr.Videos[0]
@@ -163,17 +161,17 @@ func ChannelRecentArchive (channelID string) *Video {
 
 // StreamByChannel returns the stream of a specified channel.
 // See https://dev.twitch.tv/docs/v5/reference/streams/#get-stream-by-user
-func StreamByChannel (channelID string) *Stream {
+/*func StreamByChannel (channelID string) *Stream {
     urlTail := fmt.Sprintf("/streams/%v", channelID)
     r := new(StreamResponse)
-    generalQuery(urlTail, "", &r)
+    generalQuery(urlTail, config.Twitch.AppAccessToken, &r)
     convertStreamTypes(r.Stream)
     return r.Stream
-}
+}*/
 
 // FollowedStreams returns all live streams a user follows.
 // See https://dev.twitch.tv/docs/v5/reference/users/#get-user-follows
-func FollowedStreams (authorization string) *StreamsResponse {
+/*func FollowedStreams (authorization string) *StreamsResponse {
     urlTail := fmt.Sprintf("/streams/followed")
     r := new(StreamsResponse)
     generalQuery(urlTail, authorization, &r)
@@ -181,23 +179,33 @@ func FollowedStreams (authorization string) *StreamsResponse {
         convertStreamTypes(s)
     }
     return r
-}
+}*/
 
-func TopClipsDay (channelID string) *ClipsResponse {
+/*func TopClipsDay (channelID string) *ClipsResponse {
     urlTail := fmt.Sprintf("/clips/top?channel=%v&period=day", channelID)
     r := new(ClipsResponse)
-    generalQuery(urlTail, "", &r)
+    generalQuery(urlTail, config.Twitch.AppAccessToken, &r)
 
     for _, clip := range r.Clips {
         convertClipTypes(clip)
     }
     return r
-}
+}*/
 
 // generalQuery performs an API query and parses the JSON response.
+// IMPORTANT NOTE
+// IMPORTANT NOTE
+// IMPORTANT NOTE
+// Migrated to helix twitch API on 2022-02-14 and not all
+// queries on this page are tested, such as user followed streams and clips stuff.
+// See this guide for migration if we ever want to use those:
+// https://dev.twitch.tv/docs/api/migration
+// IMPORTANT NOTE
+// IMPORTANT NOTE
+// IMPORTANT NOTE
 func generalQuery (urlTail string, authorization string, v interface{}) {
     url := fmt.Sprintf(
-            "https://api.twitch.tv/kraken%v",
+            "https://api.twitch.tv/helix%v",
             urlTail,
     )
 
@@ -206,10 +214,9 @@ func generalQuery (urlTail string, authorization string, v interface{}) {
     if err != nil {
         panic(err)
     }
-    req.Header.Add("Accept", "application/vnd.twitchtv.v5+json")
     req.Header.Add("Client-ID", config.Twitch.ClientKey)
     if len(authorization) > 0 {
-        req.Header.Add("Authorization", "OAuth "+authorization)
+        req.Header.Add("Authorization", "Bearer "+authorization)
     }
 
     // Make request
@@ -217,12 +224,16 @@ func generalQuery (urlTail string, authorization string, v interface{}) {
     if err != nil {
         panic(err)
     }
+    defer response.Body.Close()
     if response.StatusCode != 200 {
-        panic(fmt.Sprintf("Bad HTTP status code: %v", response.StatusCode))
+        bodyBytes, err := io.ReadAll(response.Body)
+        if err != nil {
+            panic(err)
+        }
+        panic(fmt.Sprintf("Bad HTTP status code: %v body: %v", response.StatusCode, string(bodyBytes)))
     }
 
     // Parse response JSON into struct
-    defer response.Body.Close()
     decoder := json.NewDecoder(response.Body)
     err = decoder.Decode(&v)
     if err != nil {
