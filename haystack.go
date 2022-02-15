@@ -174,11 +174,24 @@ func Update () {
                 vodSeconds, vodID, imagePath, vodTime, stream.Channel.Status,
                 stream.Viewers, sf.FilterIds)
 
-        // Query Twitch for the channel's recent clips.
-        cr := twitchapi.TopClipsDay(stream.Channel.Name)
-        for _, clip := range cr.Clips {
-            database.AddClipToDB(clip.TrackingId, clip.Created_At_Time,
-                    clip.Thumbnails.Small, clip.Url, stream.Channel.Name)
+        // Find the most recent stream of the channel.
+        s := database.RecentStreamOfChannel(stream.Channel.Name)
+        if s == nil {
+            fmt.Printf("OMG WTF we couldn't find a stream of that channel!!\n")
+        } else {
+            // Delete all clips of this stream.
+            database.DeleteClipsOfStream(s.ID)
+
+            // Query Twitch for the channel's recent clips.
+            cr := twitchapi.TopClipsDay(stream.Channel.Name)
+            for _, clip := range cr.Clips {
+                database.InsertClip(clip.TrackingId, s.ID, clip.Created_At_Time,
+                        clip.Thumbnails.Small, clip.Url, stream.Channel.Name)
+
+                // If it's a new clip, then add it, including its rank.
+                /*database.TrackClip(clip.TrackingId, clip.Created_At_Time,
+                        clip.Thumbnails.Small, clip.Url, stream.Channel.Name, i)*/
+            }
         }
     }
 

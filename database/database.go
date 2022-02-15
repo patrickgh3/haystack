@@ -73,6 +73,17 @@ func InitDB() {
     db.AutoMigrate(&Filter{}, &Follow{}, &Stream{}, &Thumb{}, &Clip{})
 }
 
+func RecentStreamOfChannel(ChannelName string) *Stream {
+    var s []Stream
+    db.Where("channel_name = ?", ChannelName).
+            Order("last_update_time desc").Find(&s)
+    if len(s) == 0 {
+        return nil
+    } else {
+        return &s[0]
+    }
+}
+
 // AddThumbToDB adds a new Thumb to the DB, possibly creating a new Stream.
 func AddThumbToDB(roundTime time.Time, ChannelName string,
         ChannelDisplayName string, VODSeconds int, VOD string,
@@ -154,6 +165,12 @@ func PruneOldStreams(roundTime time.Time) {
         db.Unscoped().Delete(&follow)
     }
 
+    var clips []Clip
+    db.Joins("join streams on streams.id = clips.stream_id AND streams.start_time < ?", oldestDay).Find(&clips)
+    for _, clip := range clips {
+        db.Unscoped().Delete(&clip)
+    }
+
     db.Table("streams").Unscoped().Where("start_time < ?", oldestDay).Delete(&Stream{})
 }
 
@@ -212,33 +229,40 @@ func GetFilterWithSubpath(Subpath string) *Filter {
     return nil
 }
 
-// AddClipToDB inserts a clip into the database if it does not already exist.
-func AddClipToDB(ClipID string, CreatedAt time.Time,
-        ImageUrl string, ClipUrl string, ChannelName string) {
+// TrackClip inserts or updates a clip in the DB along with its rank.
+/*func TrackClip(ClipID string, CreatedAt time.Time,
+        ImageUrl string, ClipUrl string, ChannelName string, rank int) {
+
+    // Try to find existing clip with ID.
     var c []Clip
     db.Where("clip_id = ?", ClipID).Find(&c)
-    if len(c) == 0 {
-        fmt.Printf("Clip NOT found\n")
 
-        // Find the most recent stream.
-        var s []Stream
-        db.Where("channel_name = ?", ChannelName).
-                Order("last_update_time desc").Find(&s)
-        if len(s) != 0 {
-            // Insert clip.
-            db.Create(&Clip{ClipID:ClipID, StreamID:s[0].ID,
-                    ClipCreatedAt:CreatedAt, ImageUrl:ImageUrl, ClipUrl:ClipUrl})
-        } else {
-            fmt.Printf("OMG WTF we are adding a clip but we couldn't find a stream of that channel!!\n")
-        }
+    // If clip hasn't been added yet, then add it.
+    if len(c) == 0 {
+        db.Create(&Clip{ClipID:ClipID, StreamID:currentStreamID,
     } else {
-        fmt.Printf("Clip found\n")
+        // If the clip is registered to the current stream (not a previous one)
+        // then update its rank.
+        if c.StreamID == currentStreamID {
+            c.Rank = rank
+            db.Save(&c)
+        }
     }
+}*/
+
+func InsertClip(ClipID string, StreamID uint, CreatedAt time.Time,
+        ImageUrl string, ClipUrl string, ChannelName string) {
+    db.Create(&Clip{ClipID:ClipID, StreamID:StreamID,
+            ClipCreatedAt:CreatedAt, ImageUrl:ImageUrl, ClipUrl:ClipUrl})
 }
 
 func GetStreamClips(streamId uint) []Clip {
     var clips []Clip
     db.Where("stream_id = ?", streamId).Order("id asc").Find(&clips)
     return clips
+}
+
+func DeleteClipsOfStream(streamId uint) {
+    db.Exec("DELETE FROM clips WHERE stream_id = ?", streamId)
 }
 

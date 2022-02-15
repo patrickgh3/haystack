@@ -183,7 +183,7 @@ function applyDarkMode() {
         document.getElementById('darkmodelink').innerHTML = 'Light Mode';
     } else {
         document.getElementById('stylesheet').href = haystackBaseUrl + '/style.css';
-        document.getElementById('darkmodelink').innerHTML = 'Darq Mode';
+        document.getElementById('darkmodelink').innerHTML = 'Dark Mode';
     }
     createCookie('darkmode', darkmode);
 }

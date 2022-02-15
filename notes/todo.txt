@@ -1,7 +1,22 @@
+Timestamps for VODs (Dexter)
+    (Possibly track game viewership over time too?)
+Clips
+    We're emulating a query of top clips over a time frame.
+    We want to update even after stream is finished.
+    Every X minutes, query Top Clips of channel - past day, limit 100, views
+    Iterate over list (it's sorted by views/popularity)
+    
+Make homepage more visual somehow, too textual.
+    Color popular streams
+    Length display as bar? ### vs #########
 Mobile view. (check hckrnews)
+    Clicking on stream loads a new page where you can scroll horizontally: big thumbnail on top, scroll bar on bottom
 Show clips created during that stream.
     Check that clips are returned chronologically. Do we need to increase the query limit?
     Do CSS, choose top 2 clips.
+    Prevent top clips from overlapping (Shadows' code: https://pastebin.com/5bHZ8d6S)
+Make update concurrent (networking, database)
+Add a few more games (Super Mario World, Games + Demos)
 
 
 
